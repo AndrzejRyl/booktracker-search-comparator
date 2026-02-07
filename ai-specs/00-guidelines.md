@@ -52,14 +52,42 @@ All feature specifications should follow a consistent structure to facilitate ea
 *   **Feedback Mechanisms:** Include requirements for loading states (skeleton loaders) and error handling (toast notifications) to provide clear user feedback.
 *   **Intuitive Interactions:** Describe how users will interact with the feature, including button behaviors, input validations, and navigation flows.
 
-### 2.5. Technical Considerations
+### 2.5. Page Component Structure — Render Helpers
+
+Pages with loading, error, and content states should use **inner render helper functions** (`renderSkeleton`, `renderError`, `renderTable`, etc.) orchestrated by a `renderContent()` function, rather than multiple early returns. This avoids duplicating shared elements like page headers and keeps the final return clean:
+
+```jsx
+export default function SomePage() {
+  // state, effects, derived data...
+
+  const renderSkeleton = () => ( /* loading skeleton */ );
+  const renderError = () => ( /* error card + retry */ );
+  const renderContent = () => {
+    if (loading) return renderSkeleton();
+    if (error) return renderError();
+    return ( /* filters, table, etc. */ );
+  };
+
+  return (
+    <div>
+      <h1>Page Title</h1>
+      <p>Subtitle...</p>
+      {renderContent()}
+    </div>
+  );
+}
+```
+
+Additionally, shared constants (label maps, color maps) belong in `src/constants/` — **not** co-exported from component files, since the `react-refresh` ESLint plugin forbids mixed component + constant exports.
+
+### 2.6. Technical Considerations
 
 *   **Routing:** Clearly define routes, nested routes, and how parameters will be handled.
 *   **State Management:** Briefly mention how state will be managed, especially for complex interactions (e.g., preserving search state in URL query parameters).
 *   **Styling:** Specify the chosen styling approach (e.g., Tailwind CSS, scoped CSS files per component).
 *   **Testing:** While not explicitly detailed in every spec, implicitly consider how the feature can be tested.
 
-### 2.6. Documentation and Learning
+### 2.7. Documentation and Learning
 
 *   **Progress Tracking:** Use the "Implementation Plan" and "Progress Log" sections to track the development lifecycle.
 *   **Issues & Learnings:** This section is vital. Documenting challenges, their solutions, and insights gained helps prevent recurring issues and fosters a culture of continuous learning within the team.

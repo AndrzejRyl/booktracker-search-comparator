@@ -1,0 +1,31 @@
+export const CATEGORY_LABELS = {
+  'baseline': 'Bestseller Baseline',
+  'typo': 'Typos / Misspellings',
+  'partial': 'Partial / Truncated',
+  'series': 'Series Name',
+  'romance-trad': 'Romance — Trad-Published',
+  'romance-indie': 'Romance — Indie / KU',
+  'romance-recent': 'Romance — Recent Indie',
+  'thriller-indie': 'Thriller — Indie / Kindle-First',
+  'thriller-recent': 'Thriller — Recent',
+  'fantasy-indie': 'Indie Fantasy / Sci-Fi',
+  'non-english': 'Non-English Titles',
+  'translated': 'Translated Titles',
+  'edge-case': 'Edge Cases',
+};
+
+export const CATEGORY_COLORS = {
+  'baseline': 'bg-blue-900/50 text-blue-300',
+  'typo': 'bg-amber-900/50 text-amber-300',
+  'partial': 'bg-orange-900/50 text-orange-300',
+  'series': 'bg-emerald-900/50 text-emerald-300',
+  'romance-trad': 'bg-pink-900/50 text-pink-300',
+  'romance-indie': 'bg-rose-900/50 text-rose-300',
+  'romance-recent': 'bg-fuchsia-900/50 text-fuchsia-300',
+  'thriller-indie': 'bg-red-900/50 text-red-300',
+  'thriller-recent': 'bg-red-900/50 text-red-200',
+  'fantasy-indie': 'bg-purple-900/50 text-purple-300',
+  'non-english': 'bg-teal-900/50 text-teal-300',
+  'translated': 'bg-sky-900/50 text-sky-300',
+  'edge-case': 'bg-zinc-700/50 text-zinc-300',
+};

@@ -666,18 +666,18 @@ No routing changes needed — the routes already exist from Spec 02:
 
 ## Implementation Plan
 
-- [ ] **Step 1 — Create seed data file:** Create `server/data/queries.json` with all 50 query entries (index, text, description, category).
-- [ ] **Step 2 — Create Mongoose model:** Create `server/models/Query.js` with the schema defined above.
-- [ ] **Step 3 — Create seed script:** Create `server/scripts/seed-queries.js`. Add `seed:queries` npm script to root `package.json`.
-- [ ] **Step 4 — Create backend routes:** Create `server/routes/queries.js` with `GET /` and `GET /:index`. Register in `server/index.js`.
-- [ ] **Step 5 — Run seed script and test endpoints:** Seed the database, verify both endpoints return correct data using `curl` or browser.
-- [ ] **Step 6 — Create mock query data:** Create `src/api/mock/queries.js` with the full 50-query mock dataset.
-- [ ] **Step 7 — Update mock handler:** Update `src/api/mock/index.js` to route query-related requests to the mock module.
-- [ ] **Step 8 — Create frontend API module:** Create `src/api/queries.js` with `fetchQueries()` and `fetchQuery()`.
-- [ ] **Step 9 — Create QueryCategoryBadge component:** Create `src/components/QueryCategoryBadge.jsx`.
-- [ ] **Step 10 — Build QueriesPage:** Replace placeholder with full implementation — table, search, category filter, loading/error/empty states.
-- [ ] **Step 11 — Build QueryDetailPage:** Replace placeholder with full implementation — query info card, placeholder sections for golden/app results.
-- [ ] **Step 12 — Smoke test:** Verify both pages work with mock API, lint passes, build passes. Test category filtering and text search.
+- [x] **Step 1 — Create seed data file:** Create `server/data/queries.json` with all 50 query entries (index, text, description, category).
+- [x] **Step 2 — Create Mongoose model:** Create `server/models/Query.js` with the schema defined above.
+- [x] **Step 3 — Create seed script:** Create `server/scripts/seed-queries.js`. Add `seed:queries` npm script to root `package.json`.
+- [x] **Step 4 — Create backend routes:** Create `server/routes/queries.js` with `GET /` and `GET /:index`. Register in `server/index.js`.
+- [x] **Step 5 — Run seed script and test endpoints:** Seed the database, verify both endpoints return correct data using `curl` or browser.
+- [x] **Step 6 — Create mock query data:** Create `src/api/mock/queries.js` with the full 50-query mock dataset.
+- [x] **Step 7 — Update mock handler:** Update `src/api/mock/index.js` to route query-related requests to the mock module.
+- [x] **Step 8 — Create frontend API module:** Create `src/api/queries.js` with `fetchQueries()` and `fetchQueryByIndex()`.
+- [x] **Step 9 — Create QueryCategoryBadge component:** Create `src/components/QueryCategoryBadge.jsx`.
+- [x] **Step 10 — Build QueriesPage:** Replace placeholder with full implementation — table, search, category filter, loading/error/empty states.
+- [x] **Step 11 — Build QueryDetailPage:** Replace placeholder with full implementation — query info card, placeholder sections for golden/app results.
+- [x] **Step 12 — Smoke test:** Verify both pages work with mock API, lint passes, build passes. Test category filtering and text search.
 
 ---
 
@@ -693,7 +693,7 @@ No routing changes needed — the routes already exist from Spec 02:
 
 ## Issues & Learnings
 
-*(To be filled during implementation)*
+- **ESLint react-refresh/only-export-components:** The spec placed `CATEGORY_LABELS` and `CATEGORY_COLORS` as named exports alongside the default component export in `QueryCategoryBadge.jsx`. The `react-refresh` ESLint plugin disallows mixed component + constant exports from the same file (breaks Fast Refresh). **Fix:** Moved constants to `src/constants/queryCategories.js` and imported them in both the badge component and QueriesPage. Future specs should keep shared constants in `src/constants/` separate from component files.
 
 ---
 
@@ -703,3 +703,5 @@ No routing changes needed — the routes already exist from Spec 02:
 |---|---|
 | 2026-02-07 | Spec 03 drafted — Query Bank |
 | 2026-02-07 | v1.1 — Validation review. Clarified: query list is canonical (supersedes Spec 01); detail route uses `index` not `_id`; mock handler is additive (append, don't replace); category dropdown shows human-readable labels via `CATEGORY_LABELS` export; debounce uses inline setTimeout; description column hidden (not truncated) on small screens |
+| 2026-02-07 | Implementation complete. Constants moved to `src/constants/queryCategories.js` due to ESLint react-refresh rule. Lint clean, build passes. |
+| 2026-02-07 | Step 5 done — seed script run successfully against MongoDB. All 12 steps complete. |

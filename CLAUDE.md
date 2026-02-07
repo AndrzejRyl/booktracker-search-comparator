@@ -28,3 +28,34 @@ Features are developed spec-first using documents in `ai-specs/`. The workflow i
 3. **Execute spec** (`/specs/execute`): Build the feature from the spec. Track progress inside the spec document and log any findings or issues encountered.
 
 Specs should include: overview, component breakdown, API contracts with mock data, routing, styling approach, implementation plan, and an issues/learnings section.
+
+## Code Patterns
+
+### Page component structure — render helpers
+
+Pages with loading/error/content states use **inner render helper functions** instead of early returns. This keeps the page header rendered once and makes the component body flat and readable.
+
+```jsx
+export default function SomePage() {
+  // state, effects, derived data...
+
+  const renderSkeleton = () => ( /* loading skeleton */ );
+  const renderError = () => ( /* error card + retry */ );
+  const renderContent = () => {
+    if (loading) return renderSkeleton();
+    if (error) return renderError();
+    return ( /* main content */ );
+  };
+
+  return (
+    <div>
+      <h1>Page Title</h1>
+      {renderContent()}
+    </div>
+  );
+}
+```
+
+### Shared constants
+
+Constants shared across components (e.g., label maps, color maps) go in `src/constants/` — **not** co-exported from component files, since the `react-refresh` ESLint plugin disallows mixed component + constant exports.
