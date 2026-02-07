@@ -1,7 +1,7 @@
 # Spec 05 — Results Entry
 
 **Version:** 1.0
-**Status:** Draft
+**Status:** Implemented
 
 ---
 
@@ -1043,16 +1043,16 @@ No routing changes needed — the route already exists from Spec 02:
 
 ## Implementation Plan
 
-- [ ] **Step 1 — Create Result model:** Create `server/models/Result.js` with the schema defined above.
-- [ ] **Step 2 — Create backend routes:** Create `server/routes/results.js` with GET (list/single), POST (upsert), DELETE endpoints. Register in `server/index.js`.
-- [ ] **Step 3 — Activate cascade delete:** Update `server/routes/apps.js` DELETE handler to delete associated results (`Result.deleteMany({ appId })`).
-- [ ] **Step 4 — Create mock result data:** Create `src/api/mock/results.js` with mock dataset and handler functions.
-- [ ] **Step 5 — Update mock handler:** Update `src/api/mock/index.js` to route result requests to mock module + activate cascade delete in app delete handler.
-- [ ] **Step 6 — Create frontend API module:** Create `src/api/results.js` with `fetchResults()`, `fetchResult()`, `saveResult()`, `deleteResult()`.
-- [ ] **Step 7 — Create result status constants:** Create `src/constants/resultStatus.js` with status labels and colors.
-- [ ] **Step 8 — Build ResultsEntryPage:** Replace placeholder with full implementation — two-panel layout, query navigator, screenshot upload, book entry form, save flow.
-- [ ] **Step 9 — Update AppDetailPage:** Add `fetchResults()` to data loading, compute and display live query progress (complete/not started counts and per-row status).
-- [ ] **Step 10 — Smoke test:** Verify both pages work with mock API, lint passes, build passes. Test save/next flow, screenshot upload, book add/remove, query navigation, progress display.
+- [x] **Step 1 — Create Result model:** Create `server/models/Result.js` with the schema defined above.
+- [x] **Step 2 — Create backend routes:** Create `server/routes/results.js` with GET (list/single), POST (upsert), DELETE endpoints. Register in `server/index.js`.
+- [x] **Step 3 — Activate cascade delete:** Update `server/routes/apps.js` DELETE handler to delete associated results (`Result.deleteMany({ appId })`).
+- [x] **Step 4 — Create mock result data:** Create `src/api/mock/results.js` with mock dataset and handler functions.
+- [x] **Step 5 — Update mock handler:** Update `src/api/mock/index.js` to route result requests to mock module + activate cascade delete in app delete handler.
+- [x] **Step 6 — Create frontend API module:** Create `src/api/results.js` with `fetchResults()`, `fetchResult()`, `saveResult()`, `deleteResult()`.
+- [x] **Step 7 — Create result status constants:** Create `src/constants/resultStatus.js` with status labels and colors.
+- [x] **Step 8 — Build ResultsEntryPage:** Replace placeholder with full implementation — two-panel layout, query navigator, screenshot upload, book entry form, save flow.
+- [x] **Step 9 — Update AppDetailPage:** Add `fetchResults()` to data loading, compute and display live query progress (complete/not started counts and per-row status).
+- [x] **Step 10 — Smoke test:** Verify both pages work with mock API, lint passes, build passes. Test save/next flow, screenshot upload, book add/remove, query navigation, progress display.
 
 ---
 
@@ -1091,7 +1091,7 @@ No routing changes needed — the route already exists from Spec 02:
 
 ## Issues & Learnings
 
-*(To be filled during implementation)*
+- **`screenshotPreviews` ref pattern:** The `useEffect` for loading form data on query switch needs to revoke old `URL.createObjectURL` previews, but including `screenshotPreviews` in the dependency array would cause infinite loops (since the effect resets it). Solution: use a `previewsRef` that mirrors the state, and use the ref for cleanup. Added a single `eslint-disable-next-line` for the intentionally excluded `results` dependency (we only want re-runs on `selectedQueryIndex`/`loading` changes).
 
 ---
 
@@ -1101,3 +1101,4 @@ No routing changes needed — the route already exists from Spec 02:
 |---|---|
 | 2026-02-07 | Spec 05 drafted — Results Entry |
 | 2026-02-07 | Spec 05 validated — 8 clarifying questions answered, Delete Result button added, book input validation specified |
+| 2026-02-07 | Spec 05 implemented — all 10 steps complete, lint clean (0 warnings), build passes |

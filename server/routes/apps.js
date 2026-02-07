@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import App from '../models/App.js';
 import { logoUpload } from '../middleware/upload.js';
+import Result from '../models/Result.js';
 
 const router = Router();
 
@@ -85,7 +86,7 @@ router.delete('/:id', async (req, res) => {
     if (!app) {
       return res.status(404).json({ message: 'App not found' });
     }
-    // TODO (Spec 05): Delete all results where appId === req.params.id
+    await Result.deleteMany({ appId: req.params.id });
     res.json({ message: 'App deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });

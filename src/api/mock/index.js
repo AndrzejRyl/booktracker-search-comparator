@@ -1,5 +1,6 @@
 import { getQueries, getQueryByIndex } from './queries.js';
 import { getApps, getAppById, createApp, updateApp, deleteAppById } from './apps.js';
+import { getResults, getResultById, saveResult, deleteResultById, deleteResultsByAppId } from './results.js';
 
 export async function handleRequest(method, path, body) {
   // --- Query routes ---
@@ -48,7 +49,39 @@ export async function handleRequest(method, path, body) {
   // DELETE /api/apps/:id
   const appDeleteMatch = path.match(/^\/apps\/([a-zA-Z0-9]+)$/);
   if (method === 'DELETE' && appDeleteMatch) {
-    return deleteAppById(appDeleteMatch[1]);
+    const result = deleteAppById(appDeleteMatch[1]);
+    deleteResultsByAppId(appDeleteMatch[1]);
+    return result;
+  }
+
+  // --- Result routes ---
+
+  // GET /results?appId=X or GET /results?appId=X&queryIndex=Y or GET /results?queryIndex=Y
+  if (method === 'GET' && (path === '/results' || path.startsWith('/results?'))) {
+    const url = new URL(path, 'http://localhost');
+    const appId = url.searchParams.get('appId');
+    const queryIndex = url.searchParams.get('queryIndex');
+    if (!appId && !queryIndex) throw new Error('appId or queryIndex query parameter is required');
+    return getResults(appId, queryIndex);
+  }
+
+  // GET /results/:id
+  const resultGetMatch = path.match(/^\/results\/([a-zA-Z0-9]+)$/);
+  if (method === 'GET' && resultGetMatch) {
+    const result = getResultById(resultGetMatch[1]);
+    if (!result) throw new Error('Result not found');
+    return result;
+  }
+
+  // POST /results
+  if (method === 'POST' && path === '/results') {
+    return saveResult(body);
+  }
+
+  // DELETE /results/:id
+  const resultDeleteMatch = path.match(/^\/results\/([a-zA-Z0-9]+)$/);
+  if (method === 'DELETE' && resultDeleteMatch) {
+    return deleteResultById(resultDeleteMatch[1]);
   }
 
   // --- Fallback (preserve for future specs) ---

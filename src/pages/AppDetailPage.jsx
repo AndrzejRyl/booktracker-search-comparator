@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchApp, deleteApp } from '../api/apps.js';
 import { fetchQueries } from '../api/queries.js';
+import { fetchResults } from '../api/results.js';
 import QueryCategoryBadge from '../components/QueryCategoryBadge.jsx';
 import AppFormModal from '../components/AppFormModal.jsx';
 
@@ -10,6 +11,7 @@ export default function AppDetailPage() {
   const navigate = useNavigate();
   const [app, setApp] = useState(null);
   const [queries, setQueries] = useState([]);
+  const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -21,13 +23,15 @@ export default function AppDetailPage() {
       setLoading(true);
       setError(null);
       try {
-        const [appData, queriesData] = await Promise.all([
+        const [appData, queriesData, resultsData] = await Promise.all([
           fetchApp(id),
           fetchQueries(),
+          fetchResults(id),
         ]);
         if (!cancelled) {
           setApp(appData);
           setQueries(queriesData);
+          setResults(resultsData);
         }
       } catch (err) {
         if (!cancelled) setError(err.message);
@@ -150,12 +154,15 @@ export default function AppDetailPage() {
     </div>
   );
 
+  const completedIndices = new Set(results.map((r) => r.queryIndex));
+  const completedCount = completedIndices.size;
+
   const renderProgressTable = () => (
     <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mt-6">
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-zinc-100">Query Progress</h2>
-          <span className="text-zinc-500 text-sm">0 / {queries.length}</span>
+          <span className="text-zinc-500 text-sm">{completedCount} / {queries.length}</span>
         </div>
         {queries.length === 0 ? (
           <p className="text-zinc-500 italic">No queries loaded</p>
@@ -174,14 +181,17 @@ export default function AppDetailPage() {
                 {queries.map((q) => (
                   <tr
                     key={q.index}
-                    className="border-t border-zinc-800 hover:bg-zinc-800/30 transition-colors"
+                    onClick={() => navigate(`/apps/${id}/results?query=${q.index}`)}
+                    className="border-t border-zinc-800 hover:bg-zinc-800/30 transition-colors cursor-pointer"
                   >
                     <td className="px-4 py-3 text-sm text-zinc-400">{q.index}</td>
                     <td className="px-4 py-3 text-sm text-zinc-100 font-mono">{q.text}</td>
                     <td className="px-4 py-3">
                       <QueryCategoryBadge category={q.category} />
                     </td>
-                    <td className="px-4 py-3 text-sm text-zinc-500">Not started</td>
+                    <td className={`px-4 py-3 text-sm ${completedIndices.has(q.index) ? 'text-emerald-400' : 'text-zinc-500'}`}>
+                      {completedIndices.has(q.index) ? '● Complete' : '○ Not started'}
+                    </td>
                   </tr>
                 ))}
               </tbody>
