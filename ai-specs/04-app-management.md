@@ -432,7 +432,7 @@ export function deleteAppById(id) {
 **Notes:**
 - Mock uses `let` for `MOCK_APPS` so mutations (create/update/delete) are reflected within the session.
 - `body` can be either a plain object or a `FormData` instance — the mock checks for `body.get` to handle both cases. In practice, the frontend always sends `FormData` for create/update, but the mock handles both for resilience.
-- Logo paths in mock mode are synthetic (e.g., `/uploads/logos/mock-goodreads.png`) — these won't resolve to real images. The UI will show a broken image in mock mode, which is acceptable for development. During real usage the backend serves actual uploaded files.
+- Logo paths in mock mode point to real image files placed manually in `public/uploads/logos/` (e.g., `mock-goodreads.png`). These are committed to the repo for development use. During real usage the backend serves actual uploaded files from the `uploads/` directory.
 
 ### Update `src/api/mock/index.js`
 
@@ -603,14 +603,14 @@ All state is local:
 **Behavior:**
 
 - Reads `id` (MongoDB `_id`) from route params via `useParams()`.
-- Fetches app data via `fetchApp(id)` and all queries via `fetchQueries()` (from `src/api/queries.js`, Spec 03).
+- Fetches app data via `fetchApp(id)` and all queries via `fetchQueries()` (from `src/api/queries.js`, Spec 03) **in parallel** using `Promise.all()`. A single `loading` state covers both fetches.
 - Displays app info: logo, name, notes, dates.
 - **"Edit" button** opens `AppFormModal` in edit mode, pre-populated with the app's current data. After saving, the app data refetches.
-- **"Delete" button** shows a confirmation dialog (browser `window.confirm()` — no custom modal needed). If confirmed, calls `deleteApp(id)` and navigates to `/apps` on success.
+- **"Delete" button** shows a confirmation dialog via `window.confirm("Are you sure you want to delete {appName}? This cannot be undone.")`. If confirmed, calls `deleteApp(id)` and navigates to `/apps` on success.
 - **Query Progress section**: table listing all 50 queries with their status for this app.
   - **Status column**: For this spec, all queries show "Not started" since the Results API (Spec 05) doesn't exist yet. The status will be computed in Spec 05 by checking whether a `results` document exists for this app + query combination.
   - Progress summary: "0 / 50" in the section header (count of completed queries / total queries). Will be dynamic once results are available.
-  - Each row shows: query index, query text (font-mono), category badge, status indicator.
+  - Each row shows: query index, query text (font-mono), category badge, status indicator. Rows are **not clickable** — purely informational.
 - **"Enter Results" button** navigates to `/apps/:id/results` (Results Entry page — placeholder from Spec 02, implemented in Spec 05).
 - **"Back to Apps"** link navigates to `/apps`.
 - Shows **loading skeleton** while fetching.
@@ -669,6 +669,7 @@ A modal component for creating and editing apps. Used in both AppsPage (create) 
 - **Modal overlay**: semi-transparent dark backdrop (`bg-black/60`), centered modal card.
 - **Close on backdrop click**: clicking outside the modal closes it.
 - **Close on Escape key**: pressing Escape closes the modal.
+- **Scroll locking**: When the modal is open, `document.body.style.overflow = 'hidden'` is set to prevent background scrolling. Restored to `''` on close (via `useEffect` cleanup).
 - **Form fields:**
   - Name (text input, required). Validates on submit — shows inline error "App name is required" if empty.
   - Logo (file input, required in create mode). Shows a preview of the selected/existing logo above the file input. In edit mode, shows the current logo — selecting a new file replaces the preview. In create mode, validates on submit — shows inline error "Logo is required" if no file selected. Accepts image files only (`.jpg, .jpeg, .png, .gif, .webp`).
@@ -812,6 +813,7 @@ No routing changes needed — the routes already exist from Spec 02:
 - **Optimistic UX**: No optimistic updates in this spec — after create/update/delete, refetch the data from the API to ensure consistency. The API is local and fast, so the latency is negligible.
 - **Confirmation before delete**: Uses `window.confirm()` for simplicity. A custom confirmation modal is a future enhancement.
 - **Logo required**: Every app must have a logo. No fallback/placeholder — the "Add App" form enforces this. Logo is always displayed as-is using `object-cover`. The 2MB limit from Multer ensures files stay reasonable.
+- **Logo URL**: The `logo` field stores a path like `/uploads/logos/filename.png`. The frontend uses this path as-is in `<img src={app.logo}>`. In development with Vite proxy or in production, this resolves to the backend's static file server.
 - **FormData for all create/update calls**: The frontend always uses `FormData` for create and update. On create, the logo file is required. On update, the logo file is optional (existing logo is preserved if not replaced).
 
 ---
@@ -856,3 +858,4 @@ No routing changes needed — the routes already exist from Spec 02:
 | Date | Update |
 |---|---|
 | 2026-02-07 | Spec 04 drafted — App Management |
+| 2026-02-07 | Spec validated — clarifications added: mock images will be real files in public/, logo URLs used as-is, query progress rows not clickable, parallel data fetching on detail page, delete confirm wording specified, modal scroll locking added |
