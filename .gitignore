@@ -23,6 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
+# Config
+.env.production
+.env.staging
+.env.development
 
 # Sandboxing for AI
 sandbox_config.sb
