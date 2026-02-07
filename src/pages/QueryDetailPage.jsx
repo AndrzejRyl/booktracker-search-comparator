@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { fetchQueryByIndex } from '../api/queries.js';
 import { fetchResultsByQuery } from '../api/results.js';
 import { fetchApps } from '../api/apps.js';
+import { fetchGoldenResult } from '../api/golden.js';
 import QueryCategoryBadge from '../components/QueryCategoryBadge.jsx';
 
 export default function QueryDetailPage() {
@@ -10,6 +11,7 @@ export default function QueryDetailPage() {
   const [query, setQuery] = useState(null);
   const [results, setResults] = useState([]);
   const [apps, setApps] = useState([]);
+  const [goldenResult, setGoldenResult] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -20,15 +22,17 @@ export default function QueryDetailPage() {
       setLoading(true);
       setError(null);
       try {
-        const [queryData, resultsData, appsData] = await Promise.all([
+        const [queryData, resultsData, appsData, goldenData] = await Promise.all([
           fetchQueryByIndex(id),
           fetchResultsByQuery(id),
           fetchApps(),
+          fetchGoldenResult(id).catch(() => null),
         ]);
         if (!cancelled) {
           setQuery(queryData);
           setResults(resultsData);
           setApps(appsData);
+          setGoldenResult(goldenData);
         }
       } catch (err) {
         if (!cancelled) setError(err.message);
@@ -97,6 +101,54 @@ export default function QueryDetailPage() {
       <QueryCategoryBadge category={query.category} />
     </div>
   );
+
+  const renderGoldenResults = () => {
+    if (!goldenResult || goldenResult.books.length === 0) {
+      return (
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-6">
+          <h2 className="text-lg font-semibold text-zinc-100 mb-4">Golden Results</h2>
+          <p className="text-zinc-500 italic">No golden results defined yet.</p>
+          <p className="text-zinc-600 text-sm mt-1">Define golden results in the Golden Results editor.</p>
+          <Link
+            to={`/golden?query=${id}`}
+            className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors mt-3 inline-block"
+          >
+            Go to Golden Editor &rarr;
+          </Link>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-6">
+        <h2 className="text-lg font-semibold text-zinc-100 mb-4">
+          Golden Results
+          <span className="text-zinc-500 text-sm font-normal ml-2">
+            {goldenResult.books.length} book{goldenResult.books.length !== 1 ? 's' : ''}
+          </span>
+        </h2>
+        <div className="space-y-1">
+          {goldenResult.books.map((book, i) => (
+            <div key={i} className="flex items-baseline gap-2 text-sm">
+              <span className="text-zinc-500 font-mono w-5 text-right shrink-0">{book.rank}.</span>
+              <span className="text-zinc-200">{book.title}</span>
+              <span className="text-zinc-600">&mdash;</span>
+              <span className="text-zinc-400">{book.author}</span>
+            </div>
+          ))}
+        </div>
+        <p className="text-xs text-zinc-500 mt-4">
+          Last updated: {new Date(goldenResult.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+        </p>
+        <Link
+          to={`/golden?query=${id}`}
+          className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors mt-3 inline-block"
+        >
+          Edit in Golden Editor &rarr;
+        </Link>
+      </div>
+    );
+  };
 
   const renderAppResult = (result) => {
     const logo = getAppLogo(result.appId);
@@ -181,6 +233,7 @@ export default function QueryDetailPage() {
           &larr; Back to Query Bank
         </Link>
         {renderQueryCard()}
+        {renderGoldenResults()}
         {renderAppResults()}
       </>
     );

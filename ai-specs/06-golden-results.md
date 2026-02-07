@@ -1,7 +1,7 @@
 # Spec 06 — Golden Results
 
 **Version:** 1.1
-**Status:** Draft
+**Status:** Implemented
 
 ---
 
@@ -820,14 +820,14 @@ No routing changes needed — the route already exists from Spec 02:
 
 ## Implementation Plan
 
-- [ ] **Step 1 — Create GoldenResult model:** Create `server/models/GoldenResult.js` with the schema defined above.
-- [ ] **Step 2 — Create backend routes:** Create `server/routes/golden.js` with GET (list/single) and PUT (upsert) endpoints. Register in `server/index.js`.
-- [ ] **Step 3 — Create mock golden result data:** Create `src/api/mock/golden.js` with mock dataset and handler functions.
-- [ ] **Step 4 — Update mock handler:** Update `src/api/mock/index.js` to route golden result requests to mock module.
-- [ ] **Step 5 — Create frontend API module:** Create `src/api/golden.js` with `fetchGoldenResults()`, `fetchGoldenResult()`, `saveGoldenResult()`.
-- [ ] **Step 6 — Build GoldenPage:** Replace placeholder with full implementation — query table, editing panel, book entry (manual + JSON), save flow, progress counter.
-- [ ] **Step 7 — Update QueryDetailPage:** Add `fetchGoldenResult()` to data loading, render golden results card between query info and app results.
-- [ ] **Step 8 — Smoke test:** Verify both pages work with mock API, lint passes, build passes. Test save flow, book add/remove, JSON paste, query switching with dirty state, progress counter.
+- [x] **Step 1 — Create GoldenResult model:** Create `server/models/GoldenResult.js` with the schema defined above.
+- [x] **Step 2 — Create backend routes:** Create `server/routes/golden.js` with GET (list/single) and PUT (upsert) endpoints. Register in `server/index.js`.
+- [x] **Step 3 — Create mock golden result data:** Create `src/api/mock/golden.js` with mock dataset and handler functions.
+- [x] **Step 4 — Update mock handler:** Update `src/api/mock/index.js` to route golden result requests to mock module.
+- [x] **Step 5 — Create frontend API module:** Create `src/api/golden.js` with `fetchGoldenResults()`, `fetchGoldenResult()`, `saveGoldenResult()`.
+- [x] **Step 6 — Build GoldenPage:** Replace placeholder with full implementation — query table, editing panel, book entry (manual + JSON), save flow, progress counter.
+- [x] **Step 7 — Update QueryDetailPage:** Add `fetchGoldenResult()` to data loading, render golden results card between query info and app results.
+- [x] **Step 8 — Smoke test:** Verify both pages work with mock API, lint passes, build passes. Test save flow, book add/remove, JSON paste, query switching with dirty state, progress counter.
 
 ---
 
@@ -844,7 +844,9 @@ No routing changes needed — the route already exists from Spec 02:
 
 ## Issues & Learnings
 
-*(To be filled during implementation)*
+- No issues encountered. Implementation followed the spec closely.
+- GoldenPage navigator uses `w-72` (spec) instead of `w-64` (ResultsEntryPage) since the spec explicitly requested `w-72` for the wider navigator.
+- The `isDirty` computation uses `JSON.stringify` comparison as specified, which is simpler than the field-by-field comparison in ResultsEntryPage (since golden results have no screenshots to track separately).
 
 ---
 
@@ -854,3 +856,4 @@ No routing changes needed — the route already exists from Spec 02:
 |---|---|
 | 2026-02-07 | Spec 06 drafted — Golden Results |
 | 2026-02-07 | Spec 06 v1.1 — Validation review: (1) Changed layout from vertical table+panel to two-column navigator+form matching ResultsEntryPage, (2) `isDirty` computed via `cleanStateRef` instead of explicit state, (3) Empty state uses distinct placeholder card, (4) QueryDetailPage silently swallows all golden fetch errors, (5) Added deep-link support (`?query=X`) — moved from future considerations to in-scope, (6) Updated styling/skeleton sections for two-column layout |
+| 2026-02-07 | Spec 06 implemented — All 8 steps completed. Lint and build pass. |

@@ -1,6 +1,7 @@
 import { getQueries, getQueryByIndex } from './queries.js';
 import { getApps, getAppById, createApp, updateApp, deleteAppById } from './apps.js';
 import { getResults, getResultById, saveResult, deleteResultById, deleteResultsByAppId } from './results.js';
+import { getGoldenResults, getGoldenResultByQueryIndex, saveGoldenResult } from './golden.js';
 
 export async function handleRequest(method, path, body) {
   // --- Query routes ---
@@ -82,6 +83,27 @@ export async function handleRequest(method, path, body) {
   const resultDeleteMatch = path.match(/^\/results\/([a-zA-Z0-9]+)$/);
   if (method === 'DELETE' && resultDeleteMatch) {
     return deleteResultById(resultDeleteMatch[1]);
+  }
+
+  // --- Golden result routes ---
+
+  // GET /golden
+  if (method === 'GET' && path === '/golden') {
+    return getGoldenResults();
+  }
+
+  // GET /golden/:queryIndex
+  const goldenGetMatch = path.match(/^\/golden\/(\d+)$/);
+  if (method === 'GET' && goldenGetMatch) {
+    const result = getGoldenResultByQueryIndex(goldenGetMatch[1]);
+    if (!result) throw new Error('Golden result not found');
+    return result;
+  }
+
+  // PUT /golden/:queryIndex
+  const goldenPutMatch = path.match(/^\/golden\/(\d+)$/);
+  if (method === 'PUT' && goldenPutMatch) {
+    return saveGoldenResult(goldenPutMatch[1], body);
   }
 
   // --- Fallback (preserve for future specs) ---
