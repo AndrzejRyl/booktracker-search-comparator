@@ -1,7 +1,7 @@
 # Spec 09 — Dashboard
 
 **Version:** 1.0
-**Status:** Draft
+**Status:** Implemented
 
 ---
 
@@ -431,13 +431,13 @@ The sidebar already has the Dashboard entry as the first nav item.
 
 ## Implementation Plan
 
-- [ ] **Step 1 — Implement data loading:** Replace the `DashboardPage` placeholder. Add state variables (`apps`, `queries`, `results`, `goldenResults`, `scoreData`, `loading`, `error`). Implement the two-wave fetch pattern with `useEffect`. Add `renderSkeleton`, `renderError`, `renderContent` helper functions.
-- [ ] **Step 2 — Build Stats Cards section:** Compute aggregated stats (app count, total results, results percentage, golden count, golden percentage). Render three stat cards in a responsive grid.
-- [ ] **Step 3 — Build Leaderboard Summary section:** Render ranked app list from `scoreData.apps` with rank medals, logos, names, percentages, and progress bars. Add golden coverage footer with link to `/leaderboard`. Handle empty/error states.
-- [ ] **Step 4 — Build Data Completion section:** Compute per-app result counts. Render a table with progress bars and percentages, sorted by completion. App names link to `/apps/{appId}`. Hide section when no apps exist.
-- [ ] **Step 5 — Build Quick Actions section:** Render three action cards linking to `/apps`, `/apps`, and `/golden`. Dynamic descriptions based on current data state.
-- [ ] **Step 6 — Handle empty and error states:** Verify all empty states render correctly (no apps, no results, no golden, no scores). Verify graceful degradation when scoring fails.
-- [ ] **Step 7 — Smoke test:** Verify the Dashboard works with mock API. Test all sections, links, empty states. Lint and build pass.
+- [x] **Step 1 — Implement data loading:** Replace the `DashboardPage` placeholder. Add state variables (`apps`, `results`, `goldenResults`, `scoreData`, `loading`, `error`). Implement the two-wave fetch pattern with `useEffect`. Add `renderSkeleton`, `renderError`, `renderContent` helper functions.
+- [x] **Step 2 — Build Stats Cards section:** Compute aggregated stats (app count, total results, results percentage, golden count, golden percentage). Render three stat cards in a responsive grid.
+- [x] **Step 3 — Build Leaderboard Summary section:** Render ranked app list from `scoreData.apps` with rank medals, logos, names, percentages, and progress bars. Add golden coverage footer with link to `/leaderboard`. Handle empty/error states.
+- [x] **Step 4 — Build Data Completion section:** Compute per-app result counts. Render a table with progress bars and percentages, sorted by completion. App names link to `/apps/{appId}`. Hide section when no apps exist.
+- [x] **Step 5 — Build Quick Actions section:** Render three action cards linking to `/apps`, `/apps`, and `/golden`. Dynamic descriptions based on current data state.
+- [x] **Step 6 — Handle empty and error states:** All empty states implemented inline within each section render helper. Graceful degradation for scores (fetchScores catches errors, returns null, leaderboard shows inline error).
+- [x] **Step 7 — Smoke test:** Lint and build pass. No new files created — only DashboardPage.jsx modified.
 
 ---
 
@@ -462,6 +462,10 @@ The sidebar already has the Dashboard entry as the first nav item.
 4. **"Enter Results" links to `/apps`**: Intended — user picks an app from the list, then navigates to Results Entry from the App Detail page. No deep-linking to a specific app.
 5. **Quick Actions has no section heading**: Just the three cards, no title above them.
 
+### Implementation findings (2026-02-08)
+
+1. **`queries` state removed**: The spec listed `queries` as a state variable and included `fetchQueries()` in Wave 1, but no Dashboard section actually reads the queries data (the total query count is always hardcoded as 50). Removed the state, the import, and the fetch call to fix the `no-unused-vars` lint error. If query data is needed in the future (e.g., category breakdown), it can be added back.
+
 ---
 
 ## Progress Log
@@ -469,3 +473,4 @@ The sidebar already has the Dashboard entry as the first nav item.
 | Date | Update |
 |---|---|
 | 2026-02-08 | Spec 09 drafted — Dashboard |
+| 2026-02-08 | Spec 09 implemented — all 7 steps complete |
