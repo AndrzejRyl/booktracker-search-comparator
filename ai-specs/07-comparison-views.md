@@ -1,7 +1,7 @@
 # Spec 07 — Comparison Views
 
 **Version:** 1.0
-**Status:** Draft
+**Status:** Implemented
 
 ---
 
@@ -642,15 +642,15 @@ All styling uses **Tailwind CSS 4** classes consistent with the dark theme.
 
 ## Implementation Plan
 
-- [ ] **Step 1 — Create constants and utils:** Create `src/constants/compareViews.js` with view keys and labels. Create `src/utils/goldenMatch.js` with `normalizeStr`, `isGoldenMatch`, `countGoldenMatches`.
-- [ ] **Step 2 — Build page shell and tab bar:** Replace ComparePage placeholder with the page header, tab bar (reading/writing URL search params via `useSearchParams`), and a `renderContent()` that delegates to the active sub-view component. Read `?query=X` param once on mount and pass as `initialQueryIndex` to SideBySideView.
-- [ ] **Step 3 — Implement data loading:** Add `useEffect` that fetches apps, queries, golden results (first wave), then fetches all results per-app (second wave). Add loading/error states with skeleton and error card.
-- [ ] **Step 4 — Build ScreenshotLightbox component:** Create `src/components/ScreenshotLightbox.jsx` — backdrop, close on Escape/backdrop click, scroll lock, arrow navigation, keyboard nav, dot indicators, header text.
-- [ ] **Step 5 — Build SideBySideView component:** Create `src/components/SideBySideView.jsx` — query selector dropdown, app toggle buttons, comparison cards with book lists, golden highlighting, screenshot thumbnails with lightbox integration. Handle empty states.
-- [ ] **Step 6 — Build QueryMatrixView component:** Create `src/components/QueryMatrixView.jsx` — heatmap table with sticky headers, logo-only column headers with tooltips, color-coded cells, category filter, legend, cell click navigation to Side-by-Side.
-- [ ] **Step 7 — Build BreakdownView component:** Create `src/components/BreakdownView.jsx` — sortable table with search, category filter, logo-only column headers, app result columns showing X/Y format, column sorting (no-golden and no-result rows sort to bottom), row click navigation.
-- [ ] **Step 8 — Wire cross-view navigation:** Ensure clicking a matrix/breakdown cell switches to Side-by-Side with the correct query pre-selected via `setSearchParams`. Ensure `initialQueryIndex` is passed through correctly.
-- [ ] **Step 9 — Smoke test:** Verify all three views work with mock API. Test tab switching, query selection, app toggling, matrix cell clicks, sorting, filtering, lightbox navigation. Lint and build pass.
+- [x] **Step 1 — Create constants and utils:** Create `src/constants/compareViews.js` with view keys and labels. Create `src/utils/goldenMatch.js` with `normalizeStr`, `isGoldenMatch`, `countGoldenMatches`.
+- [x] **Step 2 — Build page shell and tab bar:** Replace ComparePage placeholder with the page header, tab bar (reading/writing URL search params via `useSearchParams`), and a `renderContent()` that delegates to the active sub-view component. Read `?query=X` param once on mount and pass as `initialQueryIndex` to SideBySideView.
+- [x] **Step 3 — Implement data loading:** Add `useEffect` that fetches apps, queries, golden results (first wave), then fetches all results per-app (second wave). Add loading/error states with skeleton and error card.
+- [x] **Step 4 — Build ScreenshotLightbox component:** Create `src/components/ScreenshotLightbox.jsx` — backdrop, close on Escape/backdrop click, scroll lock, arrow navigation, keyboard nav, dot indicators, header text.
+- [x] **Step 5 — Build SideBySideView component:** Create `src/components/SideBySideView.jsx` — query selector dropdown, app toggle buttons, comparison cards with book lists, golden highlighting, screenshot thumbnails with lightbox integration. Handle empty states.
+- [x] **Step 6 — Build QueryMatrixView component:** Create `src/components/QueryMatrixView.jsx` — heatmap table with sticky headers, logo-only column headers with tooltips, color-coded cells, category filter, legend, cell click navigation to Side-by-Side.
+- [x] **Step 7 — Build BreakdownView component:** Create `src/components/BreakdownView.jsx` — sortable table with search, category filter, logo-only column headers, app result columns showing X/Y format, column sorting (no-golden and no-result rows sort to bottom), row click navigation.
+- [x] **Step 8 — Wire cross-view navigation:** Ensure clicking a matrix/breakdown cell switches to Side-by-Side with the correct query pre-selected via `setSearchParams`. Ensure `initialQueryIndex` is passed through correctly.
+- [x] **Step 9 — Smoke test:** Verify all three views work with mock API. Test tab switching, query selection, app toggling, matrix cell clicks, sorting, filtering, lightbox navigation. Lint and build pass.
 
 ---
 
@@ -669,7 +669,10 @@ All styling uses **Tailwind CSS 4** classes consistent with the dark theme.
 
 ## Issues & Learnings
 
-*(To be filled during implementation)*
+- **Unused `selectedQuery` variable in SideBySideView:** Initially derived `selectedQuery` from queries but it wasn't used anywhere in the component — removed to pass lint.
+- **ESLint exhaustive-deps directive:** The `useEffect` for `loadData()` in ComparePage had an unnecessary `eslint-disable` comment — the linter didn't flag the missing dep, so the directive was removed.
+- **No mock handler changes needed:** The spec noted that `mock/index.js` might need adjustment, but confirmed that `fetchResults(appId)` works fine since the mock handler accepts `appId` alone.
+- **Cross-view navigation:** Matrix and Breakdown both pass `setSearchParams` from ComparePage. Clicking a cell calls `setSearchParams({ view: 'side-by-side', query: N })`, which updates the URL and causes ComparePage to re-derive `activeView` and `initialQueryIndex` from search params, rendering SideBySideView with the correct query pre-selected.
 
 ---
 
@@ -679,3 +682,4 @@ All styling uses **Tailwind CSS 4** classes consistent with the dark theme.
 |---|---|
 | 2026-02-07 | Spec 07 drafted — Comparison Views |
 | 2026-02-07 | Spec validated — clarifications resolved: (1) golden match helpers → `src/utils/goldenMatch.js`, (2) sub-views extracted to separate components (`SideBySideView`, `QueryMatrixView`, `BreakdownView`), (3) `?query=X` read once on mount (not synced), (4) app column headers use logo-only with tooltip (no text abbreviation), (5) no-golden and no-result rows sort to bottom in Breakdown, (6) category "All" uses `value=""` matching QueriesPage |
+| 2026-02-07 | Implementation complete — all 9 steps done. 7 new files created, 1 modified. Lint and build pass. |
