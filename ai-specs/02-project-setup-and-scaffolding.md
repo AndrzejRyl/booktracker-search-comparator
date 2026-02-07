@@ -1,6 +1,6 @@
 # Spec 02 — Project Setup & Scaffolding
 
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Draft
 
 ---
@@ -13,7 +13,7 @@ This spec transforms the bare Vite + React 19 template into a fully wired projec
 2. Installing and configuring **React Router v7** with all page routes defined (placeholder content).
 3. Building the **AppShell** layout — persistent sidebar navigation + main content area.
 4. Creating the **API client** abstraction (`src/api/client.js`) and the **mock API** toggle infrastructure (`src/api/mock/`).
-5. Setting up the **Express.js backend** skeleton under `server/` with MongoDB/Mongoose connection, Multer config, and a health-check endpoint.
+5. Setting up the **Express.js backend** skeleton under `server/` with MongoDB/Mongoose connection and Multer config.
 6. Migrating **environment variables** from `REACT_APP_*` to `VITE_*`.
 7. Configuring **`concurrently`** so a single `npm run dev` starts both Vite and Express.
 8. Cleaning up the Vite default template files (`App.css`, demo logos, counter code).
@@ -46,9 +46,7 @@ booktracker-search-comparator/
 ├── package.json                  # updated — new deps, new scripts
 ├── vite.config.js                # updated — proxy for /api
 ├── tailwind.config.js            # (only if Tailwind 4 requires it — see notes)
-├── .env.development              # migrated to VITE_* vars
-├── .env.staging                  # migrated
-├── .env.production               # migrated
+├── .env.development              # migrated to VITE_* vars (gitignored)
 ├── .gitignore                    # updated — server/uploads/, server/.env
 │
 ├── src/
@@ -274,8 +272,8 @@ export async function handleRequest(method, path, body) {
 ### 6. `server/index.js` (Express Skeleton)
 
 - Imports Express, cors, dotenv.
-- Loads `.env` config.
-- Connects to MongoDB via `config/db.js`.
+- Loads `.env` config with explicit path: `dotenv.config({ path: './server/.env' })` (since the process runs from the project root via `node --watch server/index.js`).
+- Connects to MongoDB via `config/db.js`. **Note:** A running MongoDB instance is required for the Express server to start.
 - Registers middleware: `cors()`, `express.json()`, static file serving for `/uploads`.
 - Starts listening on `PORT` (default 3001).
 - Logs startup message.
@@ -472,9 +470,9 @@ npm install -D tailwindcss @tailwindcss/vite concurrently
     "dev": "node --watch index.js"
   },
   "dependencies": {
-    "express": "^5.1.0",
+    "express": "^4.21.0",
     "mongoose": "^8.x",
-    "multer": "^2.0.0",
+    "multer": "^1.4.5-lts.2",
     "cors": "^2.8.5",
     "dotenv": "^16.x"
   }
@@ -554,7 +552,7 @@ The API client (`client.js`) does throw on non-2xx responses, so error handling 
 - [ ] **Step 10 — Create API client:** Create `src/api/client.js` with fetch wrapper and mock toggle.
 - [ ] **Step 11 — Create mock API stub:** Create `src/api/mock/index.js` with placeholder handler.
 - [ ] **Step 12 — Scaffold Express backend:** Create `server/` directory with `package.json`, `index.js`, `config/db.js`, `middleware/upload.js`. Create empty `routes/` and `models/` directories. Create `uploads/` subdirectories.
-- [ ] **Step 13 — Install server dependencies:** Run `npm install` inside `server/`.
+- [ ] **Step 13 — Install server dependencies:** Run `cd server && npm install` (separate from root — not using workspaces).
 - [ ] **Step 14 — Update root scripts:** Update root `package.json` with `concurrently` dev script and `server:dev` script.
 - [ ] **Step 15 — Update `.gitignore`:** Add `server/uploads/`, `server/.env`, `server/node_modules/`.
 - [ ] **Step 16 — Smoke test:** Run `npm run dev`, verify Vite starts, Express starts, sidebar navigation works, all placeholder pages render.
@@ -570,6 +568,23 @@ The API client (`client.js`) does throw on non-2xx responses, so error handling 
 
 ---
 
+## Validation Decisions
+
+Resolved during spec validation (2026-02-07):
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Express 5 vs Express 4 | **Express 4** (`^4.21.0`) — stable, battle-tested |
+| 2 | Multer 2.x vs 1.x | **Multer 1.x** (`^1.4.5-lts.2`) — stable, well-documented |
+| 3 | MongoDB required for dev startup | **Yes** — MongoDB must be running locally; no graceful fallback |
+| 4 | `.env.development` committed or gitignored | **Gitignored** — keep in `.gitignore`, document expected values in spec |
+| 5 | Server deps — separate install vs workspaces | **Separate** — manual `cd server && npm install` required |
+| 6 | Sidebar icons — emoji vs text placeholders | **Emoji** — acceptable for scaffolding |
+| 7 | Health check endpoint | **Not needed** — omitted from this spec |
+| 8 | dotenv path for `server/.env` | **Explicit path** — use `dotenv.config({ path: './server/.env' })` |
+
+---
+
 ## Issues & Learnings
 
 *(To be filled during implementation)*
@@ -581,3 +596,4 @@ The API client (`client.js`) does throw on non-2xx responses, so error handling 
 | Date | Update |
 |---|---|
 | 2026-02-07 | Spec 02 drafted — Project Setup & Scaffolding |
+| 2026-02-07 | Spec 02 validated — 8 questions resolved, updated to v1.1 (Express 4, Multer 1.x, explicit dotenv path, no health check) |
