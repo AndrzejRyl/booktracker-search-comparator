@@ -596,7 +596,7 @@ export function deleteResultsByAppId(appId) {
 
 ### Update `src/api/mock/index.js`
 
-**Append** result route matching above the fallback, after the existing app routes:
+**Append** result route matching above the fallback, after the existing app routes. Uses `new URL()` for query-param parsing, consistent with the existing queries route handler:
 
 ```js
 import { getResults, getResultById, saveResult, deleteResultById, deleteResultsByAppId } from './results.js';
@@ -723,7 +723,7 @@ This is the core data-entry page. The user navigates here from the App Detail pa
 │  │                   │  │  │                      [Apply JSON]    │  ││
 │  │                   │  │  └──────────────────────────────────────┘  ││
 │  │                   │  │                                            ││
-│  │                   │  │     [Save]  [Save & Next →]               ││
+│  │                   │  │     [Save]  [Save & Next →]  [Delete Result]││
 │  │  50  the road     │  │                                            ││
 │  └──────────────────┘  └────────────────────────────────────────────┘│
 └──────────────────────────────────────────────────────────────────────┘
@@ -760,9 +760,12 @@ This is the core data-entry page. The user navigates here from the App Detail pa
     - **Manual mode:**
       - Lists existing book entries with rank, title, author, and a `×` remove button.
       - "Add Book" row at the bottom: two text inputs (title, author) and an "Add" button.
-      - When added, the book gets the next available rank (1-indexed, sequential).
+      - The "Add" button is **disabled** when either title or author input is empty.
+      - When added, the book gets the next available rank (1-indexed, sequential). Both inputs clear after a successful add.
+      - Duplicate books (same title+author) are allowed — different apps may return the same book at different ranks.
       - Books can be removed; remaining books are re-ranked automatically.
       - Maximum 9 books enforced in the UI (Add button disabled when 9 reached).
+      - **Frontend validation on save:** Before saving, the frontend validates that every book in the list has a non-empty title and author. If any book is invalid, show an inline error and prevent save. (The Mongoose schema also enforces `required: true` on these fields as a backend safeguard.)
     - **JSON mode:**
       - A `<textarea>` where the user can paste a JSON array of book objects.
       - Accepts an array of `{ "title": "...", "author": "..." }` objects. The `rank` field is optional — if omitted, ranks are assigned automatically (1-indexed, based on array position).
@@ -773,9 +776,10 @@ This is the core data-entry page. The user navigates here from the App Detail pa
       - The textarea placeholder text: `[{"title": "Book Title", "author": "Author Name"}, ...]`
   - **Action buttons:**
     - "Save" — saves the current result and stays on the same query.
-    - "Save & Next" — saves and advances to the next query in the navigator. If on the last query (or last visible query after filtering), stays on the current query.
-    - Both buttons show a loading spinner during save.
-    - Both are disabled if there's nothing to save (no screenshots and no books, and no existing result).
+    - "Save & Next" — saves and advances to the next query **in the currently filtered list**. If on the last visible query after filtering, stays on the current query. After saving, the current query may no longer match the active filter (e.g., "Not started" filter and the query just became "Complete"), but the view stays on the current query regardless.
+    - "Delete Result" — only shown when an existing result is loaded (i.e., the current query has a saved result). Deletes the result via `deleteResult(resultId)`, removes it from the local `results` array, and resets the form to empty. Styled as a danger/secondary button. Shows a loading spinner during deletion.
+    - Save and Save & Next show a loading spinner during save.
+    - Save and Save & Next are disabled if there's nothing to save (no screenshots and no books, and no existing result).
 
 **Save flow:**
 
@@ -805,6 +809,7 @@ All state is local:
 - `results` — array of result objects for this app (updated after each save).
 - `loading` — boolean (initial page load).
 - `saving` — boolean (save in progress).
+- `deleting` — boolean (delete in progress).
 - `error` — string or null.
 - `selectedQueryIndex` — number (1–50), the currently selected query.
 - `statusFilter` — string: `''` (all), `'complete'`, `'not-started'`.
@@ -962,13 +967,17 @@ All styling uses **Tailwind CSS 4** classes consistent with the dark theme from 
 ### Action Buttons
 
 ```
-- Button container: flex gap-3 mt-6
+- Button container: flex items-center gap-3 mt-6
 - Save button: bg-zinc-700 hover:bg-zinc-600 text-zinc-100 px-4 py-2 rounded-lg
                text-sm transition-colors
                disabled:opacity-50 disabled:cursor-not-allowed
 - Save & Next button: bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg
                       text-sm transition-colors
                       disabled:opacity-50 disabled:cursor-not-allowed
+- Delete Result button: ml-auto text-zinc-500 hover:text-rose-400 px-4 py-2 rounded-lg
+                        text-sm transition-colors
+                        disabled:opacity-50 disabled:cursor-not-allowed
+                        (only visible when editing an existing result)
 ```
 
 ### Progress Indicators (AppDetailPage — Updated)
@@ -1020,6 +1029,7 @@ No routing changes needed — the route already exists from Spec 02:
 - **Desktop-first**: The two-panel layout is designed for desktop (1200px+). On screens below ~768px, the left panel could stack above the right panel, but implementing responsive stacking is **out of scope** for this spec — the sidebar remains fixed-width.
 - **Keyboard accessible**: All form inputs are standard HTML elements. Tab order flows naturally through the form. Enter key in the "Add Book" inputs triggers the add action.
 - **No auto-save**: Deliberate choice — saves require explicit button click. This gives users control over when data is persisted and avoids accidental partial saves.
+- **Delete from form**: Users can delete an existing result directly from the entry form via the "Delete Result" button, reverting the query to "Not started" status.
 - **No drag-and-drop**: Screenshots are uploaded via standard file input, not drag-and-drop. File input is simpler and sufficient for the use case.
 - **No "unsaved changes" warning**: When switching queries in the navigator, changes are silently discarded. The form is lightweight and this avoids complexity. Users are expected to click "Save" before navigating.
 - **Sequential entry optimized**: "Save & Next" supports rapid sequential data entry. The navigator also supports random access for users who want to jump around.
@@ -1059,6 +1069,26 @@ No routing changes needed — the route already exists from Spec 02:
 
 ---
 
+## Clarification Log
+
+**Q1 — Mock handler URL parsing:** The existing queries route already uses `new URL(path, 'http://localhost')` for parsing query params, so the same approach for results is consistent. No change needed.
+
+**Q2 — "Save & Next" with status filter:** Advances to the **next query in the filtered list**, not the next numerically.
+
+**Q3 — "Save & Next" on last filtered item:** Stays on the current query, even if it no longer matches the active filter after saving.
+
+**Q4 — Mock screenshot files:** User will add the mock screenshot image files manually. No fallback/placeholder image needed.
+
+**Q5 — Delete result from entry form:** A **"Delete Result"** button has been added to the action buttons row (right-aligned, danger-styled). Only visible when editing an existing result. Deletes via `deleteResult(resultId)`, removes from local state, resets form to empty.
+
+**Q6 — Add Book behavior (Manual mode):** "Add" button is disabled when either title or author is empty. Inputs clear after successful add. Duplicate books (same title+author) are allowed.
+
+**Q7 — Book validation on Save:** Frontend validates that every book has non-empty title and author before sending. Mongoose schema also enforces `required: true` as backend safeguard.
+
+**Q8 — Multer error handling:** Multer's default 500 response is acceptable. No custom error middleware needed.
+
+---
+
 ## Issues & Learnings
 
 *(To be filled during implementation)*
@@ -1070,3 +1100,4 @@ No routing changes needed — the route already exists from Spec 02:
 | Date | Update |
 |---|---|
 | 2026-02-07 | Spec 05 drafted — Results Entry |
+| 2026-02-07 | Spec 05 validated — 8 clarifying questions answered, Delete Result button added, book input validation specified |
