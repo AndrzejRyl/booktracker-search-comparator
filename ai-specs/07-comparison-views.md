@@ -102,16 +102,21 @@ The mock results handler currently requires either `appId` or `queryIndex`. The 
 ```
 src/
 ├── pages/
-│   └── ComparePage.jsx             # MODIFIED — full implementation (replaces placeholder)
+│   └── ComparePage.jsx             # MODIFIED — page shell, tab bar, data loading
 ├── components/
+│   ├── SideBySideView.jsx          # NEW — Side-by-Side comparison sub-view
+│   ├── QueryMatrixView.jsx         # NEW — Query Matrix heatmap sub-view
+│   ├── BreakdownView.jsx           # NEW — Per-Query Breakdown table sub-view
 │   └── ScreenshotLightbox.jsx      # NEW — fullscreen screenshot viewer overlay
 ├── constants/
 │   └── compareViews.js             # NEW — view tab labels and keys
+├── utils/
+│   └── goldenMatch.js              # NEW — shared golden match helpers
 ```
 
 ### `ComparePage.jsx` — Comparison Views (`/compare`)
 
-This is the main page, organized as a tab-based interface with three sub-views.
+This is the main page shell. It owns the tab bar, data loading, and delegates rendering to three separate sub-view components: `SideBySideView`, `QueryMatrixView`, and `BreakdownView`. Each sub-view receives the loaded data as props.
 
 **Layout — Top-level structure:**
 
@@ -142,9 +147,8 @@ On mount, fetches all required data in a staged approach:
 
 A single `loading` state covers both waves. The page shows a skeleton until all data is loaded.
 
-**State:**
+**State (ComparePage — page shell):**
 
-All state is local:
 - `apps` — array of all app objects.
 - `queries` — array of all 50 query objects.
 - `results` — flat array of all result objects across all apps.
@@ -153,10 +157,15 @@ All state is local:
 - `error` — string or null.
 - `activeView` — string from URL search params: `'side-by-side'` (default), `'matrix'`, or `'breakdown'`.
 
-For the Side-by-Side view specifically:
-- `selectedQueryIndex` — number or null (the query to compare).
+The `?query=X` search param is **read once on mount** (matching the existing pattern in `GoldenPage` and `ResultsEntryPage`) and passed as `initialQueryIndex` prop to `SideBySideView`. Changing the query dropdown does NOT update the URL — it only changes local state within the sub-view.
+
+**State (SideBySideView — sub-view component):**
+
+- `selectedQueryIndex` — number or null (initialized from `initialQueryIndex` prop).
 - `selectedAppIds` — array of app `_id` strings (which apps to include in the comparison).
 - `lightbox` — object or null. When non-null, the `ScreenshotLightbox` is open. Shape: `{ screenshots: string[], initialIndex: number, appName: string }`.
+
+**Props passed to sub-views:** All sub-views receive `{ apps, queries, results, goldenResults }`. `SideBySideView` also receives `initialQueryIndex`.
 
 ---
 
@@ -217,12 +226,15 @@ For the Side-by-Side view specifically:
 
 **Golden match logic (shared across all three views):**
 
+These helpers live in `src/utils/goldenMatch.js` so they can be imported by all three sub-view components without violating the react-refresh ESLint rule against mixed component + constant exports.
+
 ```js
-function normalizeStr(s) {
+// src/utils/goldenMatch.js
+export function normalizeStr(s) {
   return s.toLowerCase().trim().replace(/['']/g, "'");
 }
 
-function isGoldenMatch(book, goldenBooks) {
+export function isGoldenMatch(book, goldenBooks) {
   return goldenBooks.some(
     (g) =>
       normalizeStr(g.title) === normalizeStr(book.title) &&
@@ -230,12 +242,12 @@ function isGoldenMatch(book, goldenBooks) {
   );
 }
 
-function countGoldenMatches(resultBooks, goldenBooks) {
+export function countGoldenMatches(resultBooks, goldenBooks) {
   return resultBooks.filter((book) => isGoldenMatch(book, goldenBooks)).length;
 }
 ```
 
-This is a simple exact match after normalization. Fuzzy matching is out of scope — it would be part of the Scoring spec (Spec 08). These functions are used in all three views: Side-by-Side (per-book highlighting + card summary), Query Matrix (cell values), and Per-Query Breakdown (cell values).
+This is a simple exact match after normalization. Fuzzy matching is out of scope — it would be part of the Scoring spec (Spec 08). These functions are used in all three sub-view components: SideBySideView (per-book highlighting + card summary), QueryMatrixView (cell values), and BreakdownView (cell values).
 
 **Golden Results card — when no golden result exists for the selected query:**
 
@@ -336,9 +348,9 @@ A reusable modal overlay component for viewing screenshots at full size without 
 
 **Behavior:**
 
-- **Category filter dropdown**: Same category filter as QueriesPage — filters rows by query category. Default: "All" (shows all 50). Uses `CATEGORY_LABELS` from `src/constants/queryCategories.js`.
+- **Category filter dropdown**: Same category filter as QueriesPage — filters rows by query category. Default: "All Categories" (`value=""`), showing all 50 rows. Uses `CATEGORY_LABELS` from `src/constants/queryCategories.js`.
 - **Table structure**: Fixed left columns (query index + text + golden count), scrollable right columns (one per app). The table container uses `overflow-x-auto` so it scrolls horizontally when there are many apps.
-- **Column headers**: Show the app's abbreviated name (first 2 characters uppercase for compact display) with a tooltip (`title` attribute) showing the full name. Below the abbreviation, show a small app logo (16×16). The header is sticky (`sticky top-0 z-10`).
+- **Column headers**: Show the app's logo (24×24) only, with a tooltip (`title` attribute) showing the full app name. No text abbreviation — the logo is sufficient and avoids ambiguous 2-letter codes. The header row is sticky (`sticky top-0 z-10`).
 - **Golden column (★)**: A special column between the query text and app columns. Shows the total number of golden books defined for that query. If no golden result exists, shows "—" in zinc-600. This gives context for interpreting the app cells — it's the denominator.
 - **Row headers**: Query index (font-mono) + query text (truncated). First three columns (index, text, golden) are sticky (`sticky left-0 z-10`) so they remain visible during horizontal scrolling.
 - **Cell rendering**: Each app cell represents a single app + query combination. The cell value and color depend on whether golden results exist for that query:
@@ -356,7 +368,7 @@ A reusable modal overlay component for viewing screenshots at full size without 
   - If the app has a result: shows "·" (middle dot) in `text-zinc-500` with `bg-zinc-800/50` — indicates data exists but can't be scored.
   - If the app has no result: shows "—" in `text-zinc-600` with `bg-zinc-800/30` — no data at all.
 
-- **Cell interaction**: Clicking a cell navigates to the Side-by-Side view for that query. This is done by updating the URL params: `?view=side-by-side&query={queryIndex}`. The Side-by-Side view reads the `query` param and auto-selects that query.
+- **Cell interaction**: Clicking a cell navigates to the Side-by-Side view for that query. This is done by updating the URL params via `setSearchParams`: `?view=side-by-side&query={queryIndex}`. ComparePage reads the updated `query` param and passes it as `initialQueryIndex` to `SideBySideView`, which initializes its `selectedQueryIndex` state from that prop.
 - **Row interaction**: Clicking the query text in a row navigates to `/queries/{index}` (the Query Detail page).
 
 **Legend:** Below the table, a small horizontal legend explains the symbols and color coding.
@@ -399,7 +411,7 @@ A reusable modal overlay component for viewing screenshots at full size without 
   - `Query` — Query text (font-mono, truncated). Clickable — navigates to `/queries/{index}`.
   - `Category` — Category badge (using `QueryCategoryBadge` component).
   - `★` — Golden book count for the query. Shows "—" in zinc-600 if no golden result is defined. This column provides context — it's the denominator for all app columns.
-  - **One column per app**: Column header shows abbreviated app name + logo. Cell content depends on golden result availability:
+  - **One column per app**: Column header shows app logo (24×24) with tooltip for full name (same as Query Matrix). Cell content depends on golden result availability:
 
     **When golden results exist for the query:**
     - Shows `X/Y` where X = number of the app's books that match golden books and Y = total golden books.
@@ -413,7 +425,7 @@ A reusable modal overlay component for viewing screenshots at full size without 
     - If the app has a result: "·" in `text-zinc-500` — indicates data exists but can't be scored.
     - If the app has no result: "—" in `text-zinc-600`.
 
-- **Sorting**: Click column headers to sort. Default sort: ascending by query index (#). Clicking an app column sorts by that app's golden match count (descending, then ascending on second click). Queries without golden results sort to the bottom when sorting by an app column. Visual sort indicator: `▲` or `▼` in the header.
+- **Sorting**: Click column headers to sort. Default sort: ascending by query index (#). Clicking an app column sorts by that app's golden match count (descending, then ascending on second click). When sorting by an app column, queries without golden results **and** queries where the app has no result both sort to the bottom. Visual sort indicator: `▲` or `▼` in the header.
 - **Row click**: Clicking the query text navigates to `/queries/{index}`. Clicking an app's cell navigates to the Side-by-Side view with that query pre-selected.
 - **Row count**: "Showing X of 50 queries" at the bottom, reflecting active filters.
 
@@ -514,8 +526,7 @@ All styling uses **Tailwind CSS 4** classes consistent with the dark theme.
 - Table: w-full border-collapse text-sm
 - Table header row: sticky top-0 z-10 bg-zinc-900
 - Column header cell: px-3 py-2 text-center
-- Column header abbreviation: text-xs font-bold text-zinc-300 uppercase
-- Column header logo: w-4 h-4 rounded object-cover mx-auto mt-1
+- Column header logo: w-6 h-6 rounded object-cover mx-auto (with title attr for tooltip)
 - Golden column header (★): text-amber-400 text-xs font-bold
 - Row header cells (sticky): sticky left-0 z-10 bg-zinc-900
 - Query index cell: w-10 px-2 py-1.5 text-zinc-500 font-mono text-xs text-right
@@ -618,11 +629,11 @@ All styling uses **Tailwind CSS 4** classes consistent with the dark theme.
 - **Desktop-first**: The comparison views are designed for wide screens (1200px+). The Query Matrix may require horizontal scrolling on narrower screens. The Side-by-Side cards wrap naturally with `flex-wrap`. The Per-Query Breakdown table uses `overflow-x-auto`.
 - **No auto-refresh**: Data is fetched once on page mount. To see updated results, the user must refresh the page. A manual "Refresh" button is not included — browser refresh suffices.
 - **Tab persistence**: The active tab is stored in URL search params, so it persists across page refreshes and is shareable/bookmarkable.
-- **Cross-view navigation**: Clicking a cell in the Query Matrix navigates to the Side-by-Side view for that query. This cross-linking makes the matrix an effective entry point for detailed comparison.
+- **Cross-view navigation**: Clicking a cell in the Query Matrix or Per-Query Breakdown navigates to the Side-by-Side view for that query via `setSearchParams`. Since SideBySideView initializes `selectedQueryIndex` from the `initialQueryIndex` prop (read from URL on mount), it will correctly pick up the new query when the view switches. This cross-linking makes the matrix and breakdown effective entry points for detailed comparison.
 - **Golden-centric design**: The entire comparison system is built around golden results as the scoring reference. The Matrix and Breakdown views show golden match counts, not raw book counts (since nearly every result has 9 books — the count is meaningless). The Side-by-Side view highlights golden matches per-book and shows a match summary per card. When golden results aren't defined for a query, the views degrade gracefully: Matrix/Breakdown cells show "·" (data exists but can't be scored) and the Side-by-Side golden card shows a prompt to define golden results. The views still *work* without golden data, but their analytical value is limited.
-- **Golden match logic**: All three views use the same `normalizeStr` + `isGoldenMatch` + `countGoldenMatches` functions for consistency. The matching uses simple normalized string comparison — not fuzzy matching. This is consistent with the fact that the Scoring spec (Spec 08) will define the formal scoring algorithm.
+- **Golden match logic**: All three sub-view components import `normalizeStr`, `isGoldenMatch`, and `countGoldenMatches` from `src/utils/goldenMatch.js` for consistency. The matching uses simple normalized string comparison — not fuzzy matching. This is consistent with the fact that the Scoring spec (Spec 08) will define the formal scoring algorithm.
 - **Screenshot lightbox**: Clicking a screenshot thumbnail opens a fullscreen lightbox overlay with the image at full size. The lightbox supports navigating between multiple screenshots via arrows and keyboard. This keeps the user on the page and provides a much better viewing experience than opening screenshots in separate tabs. The lightbox component is built as a reusable `ScreenshotLightbox` component in `src/components/` so it can be adopted by other pages (e.g., QueryDetailPage, ResultsEntryPage) in the future.
-- **App abbreviations in Matrix**: Using 2-character abbreviations keeps columns compact. The full name is available as a tooltip. With 5–10 apps expected, this keeps the matrix readable without horizontal scrolling in most cases.
+- **App logos in Matrix/Breakdown headers**: Column headers show the app logo (24×24) only, with the full name as a tooltip. No text abbreviation — logos are more recognizable and avoid ambiguous 2-letter codes. With 5–10 apps expected, this keeps columns compact.
 - **Sorting in Breakdown**: Only one column can be sorted at a time. Clicking a different column resets the sort direction. This keeps the UX simple and predictable.
 - **Keyboard accessibility**: Tab buttons are standard `<button>` elements. Table rows are navigable via Tab. Dropdown selects and text inputs are standard HTML. The app toggle buttons in Side-by-Side use `<button>` with `aria-pressed` for accessibility.
 - **Performance**: With 50 queries × 10 apps = 500 cells max, the matrix and breakdown table render instantly. No virtualization needed. The initial data fetch is the only potentially slow operation.
@@ -631,14 +642,14 @@ All styling uses **Tailwind CSS 4** classes consistent with the dark theme.
 
 ## Implementation Plan
 
-- [ ] **Step 1 — Create compare view constants:** Create `src/constants/compareViews.js` with view keys and labels.
-- [ ] **Step 2 — Build page shell and tab bar:** Replace ComparePage placeholder with the page header, tab bar (reading/writing URL search params), and a `renderContent()` that delegates to the active sub-view.
+- [ ] **Step 1 — Create constants and utils:** Create `src/constants/compareViews.js` with view keys and labels. Create `src/utils/goldenMatch.js` with `normalizeStr`, `isGoldenMatch`, `countGoldenMatches`.
+- [ ] **Step 2 — Build page shell and tab bar:** Replace ComparePage placeholder with the page header, tab bar (reading/writing URL search params via `useSearchParams`), and a `renderContent()` that delegates to the active sub-view component. Read `?query=X` param once on mount and pass as `initialQueryIndex` to SideBySideView.
 - [ ] **Step 3 — Implement data loading:** Add `useEffect` that fetches apps, queries, golden results (first wave), then fetches all results per-app (second wave). Add loading/error states with skeleton and error card.
 - [ ] **Step 4 — Build ScreenshotLightbox component:** Create `src/components/ScreenshotLightbox.jsx` — backdrop, close on Escape/backdrop click, scroll lock, arrow navigation, keyboard nav, dot indicators, header text.
-- [ ] **Step 5 — Build Side-by-Side view:** Implement query selector dropdown, app toggle buttons, comparison cards with book lists, golden highlighting, screenshot thumbnails with lightbox integration. Handle empty states.
-- [ ] **Step 6 — Build Query Matrix view:** Implement heatmap table with sticky headers, color-coded cells, category filter, legend, cell click navigation to Side-by-Side.
-- [ ] **Step 7 — Build Per-Query Breakdown view:** Implement sortable table with search, category filter, app result columns showing X/Y format, column sorting, row click navigation.
-- [ ] **Step 8 — Wire cross-view navigation:** Ensure clicking a matrix cell switches to Side-by-Side with the correct query pre-selected. Ensure the `?query=X` param is read by Side-by-Side on activation.
+- [ ] **Step 5 — Build SideBySideView component:** Create `src/components/SideBySideView.jsx` — query selector dropdown, app toggle buttons, comparison cards with book lists, golden highlighting, screenshot thumbnails with lightbox integration. Handle empty states.
+- [ ] **Step 6 — Build QueryMatrixView component:** Create `src/components/QueryMatrixView.jsx` — heatmap table with sticky headers, logo-only column headers with tooltips, color-coded cells, category filter, legend, cell click navigation to Side-by-Side.
+- [ ] **Step 7 — Build BreakdownView component:** Create `src/components/BreakdownView.jsx` — sortable table with search, category filter, logo-only column headers, app result columns showing X/Y format, column sorting (no-golden and no-result rows sort to bottom), row click navigation.
+- [ ] **Step 8 — Wire cross-view navigation:** Ensure clicking a matrix/breakdown cell switches to Side-by-Side with the correct query pre-selected via `setSearchParams`. Ensure `initialQueryIndex` is passed through correctly.
 - [ ] **Step 9 — Smoke test:** Verify all three views work with mock API. Test tab switching, query selection, app toggling, matrix cell clicks, sorting, filtering, lightbox navigation. Lint and build pass.
 
 ---
@@ -667,3 +678,4 @@ All styling uses **Tailwind CSS 4** classes consistent with the dark theme.
 | Date | Update |
 |---|---|
 | 2026-02-07 | Spec 07 drafted — Comparison Views |
+| 2026-02-07 | Spec validated — clarifications resolved: (1) golden match helpers → `src/utils/goldenMatch.js`, (2) sub-views extracted to separate components (`SideBySideView`, `QueryMatrixView`, `BreakdownView`), (3) `?query=X` read once on mount (not synced), (4) app column headers use logo-only with tooltip (no text abbreviation), (5) no-golden and no-result rows sort to bottom in Breakdown, (6) category "All" uses `value=""` matching QueriesPage |
