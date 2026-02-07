@@ -418,8 +418,8 @@ export default function ResultsEntryPage() {
                 : 'border-transparent'
             }`}
           >
-            <span className="text-zinc-500 w-6 text-right mr-2 text-xs">{q.index}</span>
-            <span className={`mr-2 ${completedIndices.has(q.index) ? 'text-emerald-400' : 'text-zinc-600'}`}>
+            <span className="text-zinc-500 w-6 text-right mr-2 text-xs shrink-0">{q.index}</span>
+            <span className={`mr-2 shrink-0 ${completedIndices.has(q.index) ? 'text-emerald-400' : 'text-zinc-600'}`}>
               {completedIndices.has(q.index) ? '●' : '○'}
             </span>
             <span className="text-zinc-300 truncate font-mono text-xs">{q.text}</span>
