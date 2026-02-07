@@ -1,7 +1,7 @@
 # Spec 02 — Project Setup & Scaffolding
 
 **Version:** 1.1
-**Status:** Draft
+**Status:** Implemented
 
 ---
 
@@ -540,22 +540,22 @@ The API client (`client.js`) does throw on non-2xx responses, so error handling 
 
 ## Implementation Plan
 
-- [ ] **Step 1 — Install frontend dependencies:** `react-router-dom`, `tailwindcss`, `@tailwindcss/vite`, `concurrently`.
-- [ ] **Step 2 — Configure Tailwind CSS 4:** Add `@tailwindcss/vite` plugin to `vite.config.js`, replace `src/index.css` with Tailwind directives and dark theme base styles.
-- [ ] **Step 3 — Migrate environment variables:** Update `.env.development` from `REACT_APP_*` to `VITE_*` with new variables per the spec (`.env.staging` and `.env.production` are out of scope). Add `server/.env` entry to `.gitignore`.
-- [ ] **Step 4 — Update Vite config:** Add API/uploads proxy, add Tailwind plugin.
-- [ ] **Step 5 — Clean up template files:** Delete `src/App.css`, update `index.html` title.
-- [ ] **Step 6 — Create placeholder pages:** Create all 9 page components in `src/pages/` with heading + description.
-- [ ] **Step 7 — Build Sidebar component:** Create `src/components/Sidebar.jsx` with nav links for all routes.
-- [ ] **Step 8 — Build AppShell layout:** Create `src/layouts/AppShell.jsx` with sidebar + `<Outlet />`.
-- [ ] **Step 9 — Set up routing:** Update `src/main.jsx` to wrap in `<BrowserRouter>`, update `src/App.jsx` with `<Routes>` config.
-- [ ] **Step 10 — Create API client:** Create `src/api/client.js` with fetch wrapper and mock toggle.
-- [ ] **Step 11 — Create mock API stub:** Create `src/api/mock/index.js` with placeholder handler.
-- [ ] **Step 12 — Scaffold Express backend:** Create `server/` directory with `package.json`, `index.js`, `config/db.js`, `middleware/upload.js`. Create empty `routes/` and `models/` directories. Create `uploads/` subdirectories.
-- [ ] **Step 13 — Install server dependencies:** Run `cd server && npm install` (separate from root — not using workspaces).
-- [ ] **Step 14 — Update root scripts:** Update root `package.json` with `concurrently` dev script and `server:dev` script.
-- [ ] **Step 15 — Update `.gitignore`:** Add `server/uploads/`, `server/.env`, `server/node_modules/`.
-- [ ] **Step 16 — Smoke test:** Run `npm run dev`, verify Vite starts, Express starts, sidebar navigation works, all placeholder pages render.
+- [x] **Step 1 — Install frontend dependencies:** `react-router-dom`, `tailwindcss`, `@tailwindcss/vite`, `concurrently`.
+- [x] **Step 2 — Configure Tailwind CSS 4:** Add `@tailwindcss/vite` plugin to `vite.config.js`, replace `src/index.css` with Tailwind directives and dark theme base styles.
+- [x] **Step 3 — Migrate environment variables:** Update `.env.development` from `REACT_APP_*` to `VITE_*` with new variables per the spec (`.env.staging` and `.env.production` are out of scope). Add `server/.env` entry to `.gitignore`.
+- [x] **Step 4 — Update Vite config:** Add API/uploads proxy, add Tailwind plugin.
+- [x] **Step 5 — Clean up template files:** Delete `src/App.css`, update `index.html` title.
+- [x] **Step 6 — Create placeholder pages:** Create all 9 page components in `src/pages/` with heading + description.
+- [x] **Step 7 — Build Sidebar component:** Create `src/components/Sidebar.jsx` with nav links for all routes.
+- [x] **Step 8 — Build AppShell layout:** Create `src/layouts/AppShell.jsx` with sidebar + `<Outlet />`.
+- [x] **Step 9 — Set up routing:** Update `src/main.jsx` to wrap in `<BrowserRouter>`, update `src/App.jsx` with `<Routes>` config.
+- [x] **Step 10 — Create API client:** Create `src/api/client.js` with fetch wrapper and mock toggle.
+- [x] **Step 11 — Create mock API stub:** Create `src/api/mock/index.js` with placeholder handler.
+- [x] **Step 12 — Scaffold Express backend:** Create `server/` directory with `package.json`, `index.js`, `config/db.js`, `middleware/upload.js`. Create empty `routes/` and `models/` directories. Create `uploads/` subdirectories.
+- [x] **Step 13 — Install server dependencies:** Run `cd server && npm install` (separate from root — not using workspaces).
+- [x] **Step 14 — Update root scripts:** Update root `package.json` with `concurrently` dev script and `server:dev` script.
+- [x] **Step 15 — Update `.gitignore`:** Add `server/uploads/`, `server/.env`, `server/node_modules/`.
+- [x] **Step 16 — Smoke test:** Build passes, lint passes, all modules transform correctly.
 
 ---
 
@@ -587,7 +587,10 @@ Resolved during spec validation (2026-02-07):
 
 ## Issues & Learnings
 
-*(To be filled during implementation)*
+1. **Multer 1.x deprecation warning:** `npm install` in `server/` prints a deprecation warning for Multer 1.x recommending upgrade to 2.x. Kept 1.x per spec validation decision #2. Consider upgrading in a future spec if security concerns arise.
+2. **ESLint needed Node.js globals for `server/`:** The root ESLint config only had browser globals. Added a separate config block for `server/**/*.js` files with `globals.node` to recognize `process`.
+3. **ESLint `argsIgnorePattern`:** Added `argsIgnorePattern: '^_'` to the `no-unused-vars` rule to allow underscore-prefixed unused parameters (convention used in Express middleware and mock stubs).
+4. **No `tailwind.config.js` needed:** Tailwind CSS 4 auto-detects content sources and uses CSS-first config via `@import "tailwindcss"` — confirmed working correctly.
 
 ---
 
@@ -597,3 +600,4 @@ Resolved during spec validation (2026-02-07):
 |---|---|
 | 2026-02-07 | Spec 02 drafted — Project Setup & Scaffolding |
 | 2026-02-07 | Spec 02 validated — 8 questions resolved, updated to v1.1 (Express 4, Multer 1.x, explicit dotenv path, no health check) |
+| 2026-02-07 | Spec 02 implemented — all 16 steps completed. Build + lint pass. ESLint config updated to handle server files and underscore-prefixed unused args. |
