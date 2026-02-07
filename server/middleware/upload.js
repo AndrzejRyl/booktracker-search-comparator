@@ -1,7 +1,9 @@
 import multer from 'multer';
 import path from 'path';
+import { fileURLToPath } from 'url';
 
-const uploadsDir = process.env.UPLOADS_DIR || './uploads';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const uploadsDir = path.resolve(__dirname, '..', process.env.UPLOADS_DIR || './uploads');
 
 function imageFilter(_req, file, cb) {
   const allowed = /\.(jpg|jpeg|png|gif|webp)$/i;

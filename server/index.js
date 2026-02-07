@@ -5,6 +5,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { connectDB } from './config/db.js';
 import queriesRouter from './routes/queries.js';
+import appsRouter from './routes/apps.js';
 
 dotenv.config({ path: './server/.env' });
 
@@ -20,6 +21,7 @@ const uploadsDir = process.env.UPLOADS_DIR || './uploads';
 app.use('/uploads', express.static(path.resolve(__dirname, uploadsDir)));
 
 app.use('/api/queries', queriesRouter);
+app.use('/api/apps', appsRouter);
 
 // Connect to MongoDB and start server
 connectDB().then(() => {
