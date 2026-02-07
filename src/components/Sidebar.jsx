@@ -5,6 +5,7 @@ const navItems = [
   { label: 'Apps', path: '/apps', icon: '\u{1F4F1}' },
   { label: 'Queries', path: '/queries', icon: '\u{1F50D}' },
   { label: 'Compare', path: '/compare', icon: '\u2696\uFE0F' },
+  { label: 'Leaderboard', path: '/leaderboard', icon: '\u{1F3C6}' },
   { label: 'Golden Results', path: '/golden', icon: '\u2B50' },
 ];
 

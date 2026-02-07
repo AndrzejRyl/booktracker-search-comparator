@@ -1,7 +1,7 @@
 # Spec 08 — Scoring & Leaderboard
 
 **Version:** 1.0
-**Status:** Draft
+**Status:** Implemented
 
 ---
 
@@ -979,14 +979,14 @@ No changes to existing routes.
 
 ## Implementation Plan
 
-- [ ] **Step 1 — Create score color constants:** Create `src/constants/scoreColors.js` with `getScoreColor` and `getScoreBgColor` functions.
-- [ ] **Step 2 — Create backend scoring routes:** Create `server/routes/scores.js` with `GET /api/scores` and `GET /api/scores/:appId` endpoints. Register in `server/index.js`.
-- [ ] **Step 3 — Create mock scoring module:** Create `src/api/mock/scores.js` with `getScores()` and `getAppScore()` functions.
-- [ ] **Step 4 — Update mock handler:** Update `src/api/mock/index.js` to route scoring requests to mock module.
-- [ ] **Step 5 — Create frontend API module:** Create `src/api/scores.js` with `fetchScores()` and `fetchAppScore()`.
-- [ ] **Step 6 — Build LeaderboardPage:** Create `src/pages/LeaderboardPage.jsx` with the leaderboard table, expandable per-query breakdown, category comparison cards, and scoring info card.
-- [ ] **Step 7 — Update navigation:** Add Leaderboard entry to `src/components/Sidebar.jsx`. Add `/leaderboard` route to `src/App.jsx`.
-- [ ] **Step 8 — Smoke test:** Verify LeaderboardPage works with mock API. Test expand/collapse, navigation links, empty states. Lint and build pass.
+- [x] **Step 1 — Create score color constants:** Create `src/constants/scoreColors.js` with `getScoreColor` and `getScoreBgColor` functions.
+- [x] **Step 2 — Create backend scoring routes:** Create `server/routes/scores.js` with `GET /api/scores` and `GET /api/scores/:appId` endpoints. Register in `server/index.js`.
+- [x] **Step 3 — Create mock scoring module:** Create `src/api/mock/scores.js` with `getScores()` and `getAppScore()` functions.
+- [x] **Step 4 — Update mock handler:** Update `src/api/mock/index.js` to route scoring requests to mock module.
+- [x] **Step 5 — Create frontend API module:** Create `src/api/scores.js` with `fetchScores()` and `fetchAppScore()`.
+- [x] **Step 6 — Build LeaderboardPage:** Create `src/pages/LeaderboardPage.jsx` with the leaderboard table, expandable per-query breakdown, category comparison cards, and scoring info card.
+- [x] **Step 7 — Update navigation:** Add Leaderboard entry to `src/components/Sidebar.jsx`. Add `/leaderboard` route to `src/App.jsx`.
+- [x] **Step 8 — Smoke test:** Verify LeaderboardPage works with mock API. Test expand/collapse, navigation links, empty states. Lint and build pass.
 
 ---
 
@@ -1018,6 +1018,14 @@ No changes to existing routes.
 7. **Category cards show all apps** — Including those with 0.0% in a category. All apps are listed in every category card.
 8. **`totalQueries: 50` is hardcoded** — This is a fixed constant for the project, not dynamically computed.
 
+### Implementation (2026-02-08)
+
+**Findings during implementation:**
+
+1. **Unused `goldenMap` in backend route** — The spec's conceptual `GET /api/scores` code defined `goldenMap` but never used it (iteration is directly over `goldenResults` array). Removed to pass lint.
+2. **Destructured `rank` in mock `getAppScore`** — The spec destructures `rank` to exclude it from the single-app response. Renamed to `_rank` to satisfy the eslint `no-unused-vars` rule (project allows unused vars starting with `_` or uppercase).
+3. **Query text in expanded rows** — The leaderboard `GET /api/scores` response does not include `queryText` in `queryScores` (only the single-app endpoint does). To display query text in expanded rows without extra API calls, the LeaderboardPage fetches all queries in parallel with scores and builds a `queryMap` lookup. This is a minor deviation from the spec (which only mentions `fetchScores()`), but avoids N+1 API calls when expanding rows.
+
 ---
 
 ## Progress Log
@@ -1026,3 +1034,4 @@ No changes to existing routes.
 |---|---|
 | 2026-02-07 | Spec 08 drafted — Scoring & Leaderboard |
 | 2026-02-07 | Spec 08 validated — Removed `src/utils/scoring.js` (dead code), simplified `GET /api/scores/:appId` (no rank computation), confirmed all codebase assumptions |
+| 2026-02-08 | Spec 08 implemented — All 8 steps completed. Lint and build pass. |

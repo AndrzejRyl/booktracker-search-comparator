@@ -8,6 +8,7 @@ import QueriesPage from './pages/QueriesPage'
 import QueryDetailPage from './pages/QueryDetailPage'
 import ComparePage from './pages/ComparePage'
 import GoldenPage from './pages/GoldenPage'
+import LeaderboardPage from './pages/LeaderboardPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 export default function App() {
@@ -22,6 +23,7 @@ export default function App() {
         <Route path="queries/:id" element={<QueryDetailPage />} />
         <Route path="compare" element={<ComparePage />} />
         <Route path="golden" element={<GoldenPage />} />
+        <Route path="leaderboard" element={<LeaderboardPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

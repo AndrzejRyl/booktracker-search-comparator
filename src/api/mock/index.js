@@ -2,6 +2,7 @@ import { getQueries, getQueryByIndex } from './queries.js';
 import { getApps, getAppById, createApp, updateApp, deleteAppById } from './apps.js';
 import { getResults, getResultById, saveResult, deleteResultById, deleteResultsByAppId } from './results.js';
 import { getGoldenResults, getGoldenResultByQueryIndex, saveGoldenResult } from './golden.js';
+import { getScores, getAppScore } from './scores.js';
 
 export async function handleRequest(method, path, body) {
   // --- Query routes ---
@@ -104,6 +105,21 @@ export async function handleRequest(method, path, body) {
   const goldenPutMatch = path.match(/^\/golden\/(\d+)$/);
   if (method === 'PUT' && goldenPutMatch) {
     return saveGoldenResult(goldenPutMatch[1], body);
+  }
+
+  // --- Scoring routes ---
+
+  // GET /scores
+  if (method === 'GET' && path === '/scores') {
+    return getScores();
+  }
+
+  // GET /scores/:appId
+  const scoreMatch = path.match(/^\/scores\/([a-zA-Z0-9]+)$/);
+  if (method === 'GET' && scoreMatch) {
+    const result = getAppScore(scoreMatch[1]);
+    if (!result) throw new Error('App not found');
+    return result;
   }
 
   // --- Fallback (preserve for future specs) ---
