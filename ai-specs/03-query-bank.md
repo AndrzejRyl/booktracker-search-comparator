@@ -1,6 +1,6 @@
 # Spec 03 — Query Bank
 
-**Version:** 1.0
+**Version:** 1.1
 **Status:** Draft
 
 ---
@@ -31,6 +31,8 @@ The Query Bank is read-only from the user's perspective — queries are seeded, 
 ## The 50 Search Queries
 
 Each query has an `index` (1–50), the exact `text` to search, a human-readable `description` explaining the test intent, and a `category` tag for filtering.
+
+> **Note:** This query list is the canonical, refined version. It supersedes the rough draft in Spec 01, which used different groupings and different queries. The `category` field defined here is an addition to the Spec 01 data model.
 
 ### Design Philosophy
 
@@ -253,9 +255,9 @@ Returns all 50 queries, sorted by `index`. Supports optional category filter.
 ]
 ```
 
-#### `GET /api/queries/:id`
+#### `GET /api/queries/:index`
 
-Returns a single query by its MongoDB `_id`.
+Returns a single query by its `index` (1–50). Using `index` instead of MongoDB `_id` gives clean URLs (`/queries/11` instead of `/queries/664a1b...`) and keeps mock and real mode consistent.
 
 **Response:** `200 OK`
 
@@ -271,7 +273,7 @@ Returns a single query by its MongoDB `_id`.
 }
 ```
 
-**Error:** `404 Not Found` if no query matches the given ID.
+**Error:** `404 Not Found` if no query matches the given index.
 
 ```json
 { "message": "Query not found" }
@@ -310,10 +312,10 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /api/queries/:id
-router.get('/:id', async (req, res) => {
+// GET /api/queries/:index
+router.get('/:index', async (req, res) => {
   try {
-    const query = await Query.findById(req.params.id);
+    const query = await Query.findOne({ index: Number(req.params.index) });
     if (!query) {
       return res.status(404).json({ message: 'Query not found' });
     }
@@ -342,8 +344,8 @@ export async function fetchQueries(category = null) {
   return api.get(`/queries${params}`);
 }
 
-export async function fetchQuery(id) {
-  return api.get(`/queries/${id}`);
+export async function fetchQueryByIndex(index) {
+  return api.get(`/queries/${index}`);
 }
 ```
 
@@ -376,47 +378,47 @@ export function getQueries(category = null) {
   return [...MOCK_QUERIES];
 }
 
-export function getQueryById(id) {
-  return MOCK_QUERIES.find((q) => q._id === id) || null;
+export function getQueryByIndex(index) {
+  return MOCK_QUERIES.find((q) => q.index === Number(index)) || null;
 }
 ```
 
-> The full 50-entry mock array mirrors the seed data exactly, with synthetic `_id` values (`q1`–`q50`) for frontend development.
+> The full 50-entry mock array mirrors the seed data exactly, with synthetic `_id` values (`q1`–`q50`) for frontend development. Lookups on the detail page use `index` (1–50), not `_id`.
 
 ### Update `src/api/mock/index.js`
 
-Add query route matching to the main mock handler:
+**Append** query route matching to the existing mock handler (do **not** replace the whole function — future specs will add more routes):
 
 ```js
-import { getQueries, getQueryById } from './queries.js';
+import { getQueries, getQueryByIndex } from './queries.js';
 
 export async function handleRequest(method, path, _body) {
-  // GET /queries
-  if (method === 'GET' && path === '/queries') {
-    return getQueries();
-  }
+  // --- Query routes ---
 
-  // GET /queries?category=...
-  if (method === 'GET' && path.startsWith('/queries?')) {
+  // GET /queries or GET /queries?category=...
+  if (method === 'GET' && (path === '/queries' || path.startsWith('/queries?'))) {
     const url = new URL(path, 'http://localhost');
     const category = url.searchParams.get('category');
     return getQueries(category);
   }
 
-  // GET /queries/:id
-  const queryMatch = path.match(/^\/queries\/([^/]+)$/);
+  // GET /queries/:index (e.g., /queries/11)
+  const queryMatch = path.match(/^\/queries\/(\d+)$/);
   if (method === 'GET' && queryMatch) {
-    const query = getQueryById(queryMatch[1]);
+    const query = getQueryByIndex(queryMatch[1]);
     if (!query) throw new Error('Query not found');
     return query;
   }
 
+  // --- Fallback (preserve for future specs) ---
   console.warn(`[Mock API] No handler for ${method} ${path}`);
   return { message: 'Not implemented' };
 }
 ```
 
 **Note on mock handler path matching:** The `path` passed to `handleRequest` from `client.js` includes the query string (e.g., `/queries?category=typo`). The mock handler needs to parse this. A cleaner approach is to have `client.js` pass the path and query params separately, but to avoid modifying the existing `client.js` contract from Spec 02, we parse the URL in the mock handler instead.
+
+**Note on additive pattern:** Future specs (04, 05, 06) will add their own route blocks above the fallback. Each spec appends its section between the existing routes and the fallback `console.warn`.
 
 ---
 
@@ -467,9 +469,9 @@ src/
 **Behavior:**
 
 - On mount, fetches all 50 queries via `fetchQueries()`.
-- **Text search filter** (local, client-side): filters by `text` and `description` fields. Debounced to 300ms to avoid excessive re-renders on fast typing.
-- **Category dropdown filter**: calls `fetchQueries(category)` when a category is selected, or `fetchQueries()` for "All". Can also be implemented client-side since the dataset is small (50 items). **Decision: client-side filtering** — fetch all 50 once, filter locally. This avoids unnecessary API calls for a tiny dataset.
-- **Table rows are clickable**: clicking a row navigates to `/queries/:id`.
+- **Text search filter** (local, client-side): filters by `text` and `description` fields. Debounced to 300ms using an inline `setTimeout`/`clearTimeout` pattern (no external utility library needed).
+- **Category dropdown filter**: client-side filtering — fetch all 50 once, filter locally. The dropdown shows **human-readable labels** (e.g., "Romance — Indie / KU") sourced from the `CATEGORY_LABELS` export in `QueryCategoryBadge.jsx`. The "All" option shows all queries.
+- **Table rows are clickable**: clicking a row navigates to `/queries/:index` (e.g., `/queries/11`).
 - **Category badges**: use the `QueryCategoryBadge` component with color-coded backgrounds per category.
 - Shows "Showing X of 50 queries" count below the table.
 - Shows a **loading skeleton** while fetching (3–5 rows of pulsing placeholder blocks).
@@ -516,8 +518,8 @@ All state is local (no Context needed):
 
 **Behavior:**
 
-- Reads `id` from route params via `useParams()`.
-- Fetches query data via `fetchQuery(id)`.
+- Reads `id` (the query `index`) from route params via `useParams()`.
+- Fetches query data via `fetchQueryByIndex(id)`.
 - Displays query number (`index`), text, description, and category badge.
 - **"Back to Query Bank"** link navigates to `/queries`.
 - **Golden Results section**: placeholder card with message "No golden results defined yet." This section will be populated by Spec 06 (Golden Results).
@@ -527,9 +529,25 @@ All state is local (no Context needed):
 
 ### 3. `QueryCategoryBadge.jsx` — Category Badge Component
 
-A small reusable component that renders a colored pill badge for a query category.
+A small reusable component that renders a colored pill badge for a query category. Also exports `CATEGORY_LABELS` for use in the category dropdown and anywhere a human-readable category name is needed.
 
 ```jsx
+export const CATEGORY_LABELS = {
+  'baseline': 'Bestseller Baseline',
+  'typo': 'Typos / Misspellings',
+  'partial': 'Partial / Truncated',
+  'series': 'Series Name',
+  'romance-trad': 'Romance — Trad-Published',
+  'romance-indie': 'Romance — Indie / KU',
+  'romance-recent': 'Romance — Recent Indie',
+  'thriller-indie': 'Thriller — Indie / Kindle-First',
+  'thriller-recent': 'Thriller — Recent',
+  'fantasy-indie': 'Indie Fantasy / Sci-Fi',
+  'non-english': 'Non-English Titles',
+  'translated': 'Translated Titles',
+  'edge-case': 'Edge Cases',
+};
+
 const CATEGORY_COLORS = {
   'baseline': 'bg-blue-900/50 text-blue-300',
   'typo': 'bg-amber-900/50 text-amber-300',
@@ -548,15 +566,16 @@ const CATEGORY_COLORS = {
 
 export default function QueryCategoryBadge({ category }) {
   const colors = CATEGORY_COLORS[category] || 'bg-zinc-800 text-zinc-400';
+  const label = CATEGORY_LABELS[category] || category;
   return (
     <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${colors}`}>
-      {category}
+      {label}
     </span>
   );
 }
 ```
 
-This component will be reused in QueriesPage (table), QueryDetailPage (header), and later specs (Comparison Views, Golden Results).
+This component will be reused in QueriesPage (table), QueryDetailPage (header), and later specs (Comparison Views, Golden Results). The `CATEGORY_LABELS` export is used by the QueriesPage category dropdown to show human-readable labels.
 
 ---
 
@@ -613,7 +632,7 @@ All styling uses **Tailwind CSS 4** classes consistent with the dark theme estab
 No routing changes needed — the routes already exist from Spec 02:
 
 - `/queries` → `QueriesPage`
-- `/queries/:id` → `QueryDetailPage`
+- `/queries/:id` → `QueryDetailPage` (`:id` is the query `index` 1–50, e.g., `/queries/11`)
 
 ---
 
@@ -637,7 +656,7 @@ No routing changes needed — the routes already exist from Spec 02:
 
 ## UI/UX Considerations
 
-- **Desktop-first**: Table layout is optimized for desktop (1200px+). On smaller screens, the description column can be hidden or truncated.
+- **Desktop-first**: Table layout is optimized for desktop (1200px+). On smaller screens, the description column is **hidden** (`hidden lg:table-cell`).
 - **Keyboard accessible**: Table rows are focusable, Enter/Space triggers navigation. Search input and dropdown are standard form elements.
 - **Fast filtering**: All filtering is client-side (50 items), so results appear instantly as the user types.
 - **Font choice**: Query text in `font-mono` to visually separate it from descriptions and UI labels — it represents a literal search string.
@@ -650,7 +669,7 @@ No routing changes needed — the routes already exist from Spec 02:
 - [ ] **Step 1 — Create seed data file:** Create `server/data/queries.json` with all 50 query entries (index, text, description, category).
 - [ ] **Step 2 — Create Mongoose model:** Create `server/models/Query.js` with the schema defined above.
 - [ ] **Step 3 — Create seed script:** Create `server/scripts/seed-queries.js`. Add `seed:queries` npm script to root `package.json`.
-- [ ] **Step 4 — Create backend routes:** Create `server/routes/queries.js` with `GET /` and `GET /:id`. Register in `server/index.js`.
+- [ ] **Step 4 — Create backend routes:** Create `server/routes/queries.js` with `GET /` and `GET /:index`. Register in `server/index.js`.
 - [ ] **Step 5 — Run seed script and test endpoints:** Seed the database, verify both endpoints return correct data using `curl` or browser.
 - [ ] **Step 6 — Create mock query data:** Create `src/api/mock/queries.js` with the full 50-query mock dataset.
 - [ ] **Step 7 — Update mock handler:** Update `src/api/mock/index.js` to route query-related requests to the mock module.
@@ -683,3 +702,4 @@ No routing changes needed — the routes already exist from Spec 02:
 | Date | Update |
 |---|---|
 | 2026-02-07 | Spec 03 drafted — Query Bank |
+| 2026-02-07 | v1.1 — Validation review. Clarified: query list is canonical (supersedes Spec 01); detail route uses `index` not `_id`; mock handler is additive (append, don't replace); category dropdown shows human-readable labels via `CATEGORY_LABELS` export; debounce uses inline setTimeout; description column hidden (not truncated) on small screens |
