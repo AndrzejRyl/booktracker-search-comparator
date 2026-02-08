@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { fetchApp, deleteApp } from '../api/apps.js';
 import { fetchQueries } from '../api/queries.js';
 import { fetchResults } from '../api/results.js';
+import { formatDate } from '../utils/formatDate.js';
 import QueryCategoryBadge from '../components/QueryCategoryBadge.jsx';
 import AppFormModal from '../components/AppFormModal.jsx';
 
@@ -63,14 +64,6 @@ export default function AppDetailPage() {
     } catch (err) {
       setError(err.message);
     }
-  };
-
-  const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
   };
 
   const renderSkeleton = () => (

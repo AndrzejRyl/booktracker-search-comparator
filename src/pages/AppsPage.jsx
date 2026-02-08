@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchApps } from '../api/apps.js';
+import { formatDate } from '../utils/formatDate.js';
 import AppFormModal from '../components/AppFormModal.jsx';
 
 export default function AppsPage() {
@@ -26,14 +27,6 @@ export default function AppsPage() {
   useEffect(() => {
     loadApps();
   }, []);
-
-  const formatDate = (dateStr) => {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
-  };
 
   const renderSkeleton = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

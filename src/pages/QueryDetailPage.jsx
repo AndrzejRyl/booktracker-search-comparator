@@ -4,6 +4,7 @@ import { fetchQueryByIndex } from '../api/queries.js';
 import { fetchResultsByQuery } from '../api/results.js';
 import { fetchApps } from '../api/apps.js';
 import { fetchGoldenResult } from '../api/golden.js';
+import { formatDate } from '../utils/formatDate.js';
 import QueryCategoryBadge from '../components/QueryCategoryBadge.jsx';
 
 export default function QueryDetailPage() {
@@ -138,7 +139,7 @@ export default function QueryDetailPage() {
           ))}
         </div>
         <p className="text-xs text-zinc-500 mt-4">
-          Last updated: {new Date(goldenResult.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+          Last updated: {formatDate(goldenResult.updatedAt)}
         </p>
         <Link
           to={`/golden?query=${id}`}

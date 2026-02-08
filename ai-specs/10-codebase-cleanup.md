@@ -595,10 +595,10 @@ Implementation should proceed in phases, with each phase independently testable.
 - [ ] 8.1 Replace `<a href>` with `<Link>` in `ComparePage` and `SideBySideView`
 
 ### Phase 1 — High-impact DRY extractions
-- [ ] 1.1 Extract `BookListEditor` component
-- [ ] 2.1 Extract `formatDate` utility
-- [ ] 4.1 Extract `normalizeStr` + `computeQueryScore` to `server/utils/scoring.js`
-- [ ] 4.2 Extract `computeAppScore` to consolidate scoring route logic
+- [x] 1.1 Extract `BookListEditor` component
+- [x] 2.1 Extract `formatDate` utility
+- [x] 4.1 Extract `normalizeStr` + `computeQueryScore` to `server/utils/scoring.js`
+- [x] 4.2 Extract `computeAppScore` to consolidate scoring route logic
 
 ### Phase 2 — Shared UI components
 - [ ] 1.2 Extract `ErrorCard` component
@@ -650,7 +650,12 @@ The highest-impact item is **BookListEditor** (Section 1.1) — it eliminates ~3
 
 ## Issues & Learnings
 
-_(To be filled during implementation)_
+### Phase 1
+
+- **BookListEditor (1.1):** Extracted successfully. ~150 lines removed from each of `ResultsEntryPage.jsx` and `GoldenPage.jsx`. The component manages all book editing internal state (`bookInputMode`, `jsonInput`, `jsonError`, `newBookTitle`, `newBookAuthor`) while parent pages only manage the `books` array via `onChange`. Both pages now just render `<BookListEditor books={books} onChange={setBooks} />`. The `handleApplyJson` max-books validation now uses the `maxBooks` prop instead of hardcoded `9`.
+- **formatDate (2.1):** Straightforward extraction. Removed inline definitions from `AppsPage` and `AppDetailPage`. Also replaced the inline `toLocaleDateString` call in `QueryDetailPage` (used same format options). Created `src/utils/formatDate.js`.
+- **Scoring utils (4.1 + 4.2):** Created `server/utils/scoring.js` with `normalizeStr`, `computeQueryScore`, and `computeAppScore`. The `GET /:appId` route enriches `queryScores` with `queryText` and `category` after calling `computeAppScore`, since those extra fields are needed for the per-app detail view but not for the leaderboard endpoint.
+- Lint and build both pass cleanly after all Phase 1 changes.
 
 ---
 
