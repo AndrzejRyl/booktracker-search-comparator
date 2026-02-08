@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchScores } from '../api/scores.js';
 import { fetchQueries } from '../api/queries.js';
-import { getScoreColor, getScoreBgColor } from '../constants/scoreColors.js';
+import { getScoreColor, getScoreBgColor, getRankColor } from '../constants/scoreColors.js';
 import { CATEGORY_LABELS } from '../constants/queryCategories.js';
 import ErrorCard from '../components/ErrorCard.jsx';
 import EmptyState from '../components/EmptyState.jsx';
+import { pluralize } from '../utils/pluralize.js';
+import PageHeader from '../components/PageHeader.jsx';
 
 export default function LeaderboardPage() {
   const [data, setData] = useState(null);
@@ -44,16 +46,9 @@ export default function LeaderboardPage() {
     });
   };
 
-  const getRankColor = (rank) => {
-    if (rank === 1) return 'text-amber-400';
-    if (rank === 2) return 'text-zinc-300';
-    if (rank === 3) return 'text-amber-700';
-    return 'text-zinc-500';
-  };
-
   const renderSkeleton = () => (
     <div>
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mb-6">
+      <div className="card overflow-hidden mb-6">
         <div className="p-4 space-y-1">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="h-14 bg-zinc-800/50 rounded animate-pulse" />
@@ -137,10 +132,10 @@ export default function LeaderboardPage() {
   );
 
   const renderLeaderboardTable = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mb-6">
+    <div className="card overflow-hidden mb-6">
       <table className="w-full border-collapse text-sm">
         <thead>
-          <tr className="bg-zinc-800/50 text-zinc-400 text-xs uppercase tracking-wider">
+          <tr className="table-header">
             <th className="px-4 py-3 text-center w-16">Rank</th>
             <th className="px-4 py-3 text-left">App</th>
             <th className="px-4 py-3 text-left">Score</th>
@@ -237,12 +232,12 @@ export default function LeaderboardPage() {
             const queriesScored = data.apps.find((a) => a.categoryScores[cat])?.categoryScores[cat]?.queriesScored ?? 0;
 
             return (
-              <div key={cat} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+              <div key={cat} className="card p-5">
                 <div className="text-sm font-semibold text-zinc-100 mb-1">
                   {CATEGORY_LABELS[cat] || cat}
                 </div>
                 <div className="text-xs text-zinc-500 mb-3">
-                  {queriesScored} {queriesScored === 1 ? 'query' : 'queries'} scored
+                  {queriesScored} {pluralize(queriesScored, 'query', 'queries')} scored
                 </div>
                 <div>
                   {catData.map((app) => (
@@ -264,7 +259,7 @@ export default function LeaderboardPage() {
   };
 
   const renderScoringInfo = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+    <div className="card p-6">
       <h3 className="text-sm font-semibold text-zinc-300 mb-3">How Scoring Works</h3>
       <div className="text-xs text-zinc-500 space-y-1.5">
         <p>Each golden book found in an app&apos;s results = <span className="text-zinc-300 font-medium">1 point</span></p>
@@ -292,15 +287,13 @@ export default function LeaderboardPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-100 mb-1">Leaderboard</h1>
-        <p className="text-sm text-zinc-400">App rankings based on golden result matching.</p>
+      <PageHeader title="Leaderboard" subtitle="App rankings based on golden result matching.">
         {data && data.goldenCoverage > 0 && (
           <p className="text-xs text-zinc-500 mt-1">
             Golden coverage: {data.goldenCoverage} / {data.totalQueries} queries scored
           </p>
         )}
-      </div>
+      </PageHeader>
       {renderContent()}
     </div>
   );

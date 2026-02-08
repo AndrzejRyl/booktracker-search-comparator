@@ -13,3 +13,10 @@ export function getScoreBgColor(percentage) {
   if (percentage >= 20) return 'bg-amber-900/30';
   return 'bg-rose-900/30';
 }
+
+export function getRankColor(rank) {
+  if (rank === 1) return 'text-amber-400';
+  if (rank === 2) return 'text-zinc-300';
+  if (rank === 3) return 'text-amber-700';
+  return 'text-zinc-500';
+}

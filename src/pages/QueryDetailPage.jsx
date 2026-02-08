@@ -8,6 +8,7 @@ import { formatDate } from '../utils/formatDate.js';
 import QueryCategoryBadge from '../components/QueryCategoryBadge.jsx';
 import ErrorCard from '../components/ErrorCard.jsx';
 import BookListDisplay from '../components/BookListDisplay.jsx';
+import { pluralize } from '../utils/pluralize.js';
 
 export default function QueryDetailPage() {
   const { id } = useParams();
@@ -61,13 +62,13 @@ export default function QueryDetailPage() {
   const renderSkeleton = () => (
     <>
       <div className="h-5 w-40 bg-zinc-800/50 rounded animate-pulse mb-6" />
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-3">
+      <div className="card p-6 space-y-3">
         <div className="h-6 w-16 bg-zinc-800/50 rounded animate-pulse" />
         <div className="h-8 w-64 bg-zinc-800/50 rounded animate-pulse" />
         <div className="h-5 w-96 bg-zinc-800/50 rounded animate-pulse" />
         <div className="h-6 w-32 bg-zinc-800/50 rounded animate-pulse" />
       </div>
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-6 space-y-3">
+      <div className="card p-6 mt-6 space-y-3">
         <div className="h-6 w-32 bg-zinc-800/50 rounded animate-pulse" />
         {[...Array(3)].map((_, i) => (
           <div key={i} className="h-16 bg-zinc-800/50 rounded animate-pulse" />
@@ -94,7 +95,7 @@ export default function QueryDetailPage() {
   };
 
   const renderQueryCard = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-6">
+    <div className="card p-6 mt-6">
       <p className="text-zinc-500 text-sm mb-1">#{query.index}</p>
       <h1 className="text-2xl font-bold text-zinc-100 font-mono mb-2">{query.text}</h1>
       <p className="text-zinc-400 mb-3">{query.description}</p>
@@ -105,7 +106,7 @@ export default function QueryDetailPage() {
   const renderGoldenResults = () => {
     if (!goldenResult || goldenResult.books.length === 0) {
       return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-6">
+        <div className="card p-6 mt-6">
           <h2 className="text-lg font-semibold text-zinc-100 mb-4">Golden Results</h2>
           <p className="text-zinc-500 italic">No golden results defined yet.</p>
           <p className="text-zinc-600 text-sm mt-1">Define golden results in the Golden Results editor.</p>
@@ -120,11 +121,11 @@ export default function QueryDetailPage() {
     }
 
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-6">
+      <div className="card p-6 mt-6">
         <h2 className="text-lg font-semibold text-zinc-100 mb-4">
           Golden Results
           <span className="text-zinc-500 text-sm font-normal ml-2">
-            {goldenResult.books.length} book{goldenResult.books.length !== 1 ? 's' : ''}
+            {goldenResult.books.length} {pluralize(goldenResult.books.length, 'book')}
           </span>
         </h2>
         <BookListDisplay books={goldenResult.books} />
@@ -158,8 +159,8 @@ export default function QueryDetailPage() {
             {getAppName(result.appId)}
           </Link>
           <span className="text-zinc-600 text-xs">
-            {result.books.length} book{result.books.length !== 1 ? 's' : ''}
-            {result.screenshots.length > 0 && ` · ${result.screenshots.length} screenshot${result.screenshots.length !== 1 ? 's' : ''}`}
+            {result.books.length} {pluralize(result.books.length, 'book')}
+            {result.screenshots.length > 0 && ` · ${result.screenshots.length} ${pluralize(result.screenshots.length, 'screenshot')}`}
           </span>
         </div>
 
@@ -183,7 +184,7 @@ export default function QueryDetailPage() {
   const renderAppResults = () => {
     if (results.length === 0) {
       return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-6">
+        <div className="card p-6 mt-6">
           <h2 className="text-lg font-semibold text-zinc-100 mb-4">App Results</h2>
           <p className="text-zinc-500 italic">No results recorded yet.</p>
           <p className="text-zinc-600 text-sm mt-1">(Results are entered per-app in the Apps section)</p>
@@ -192,11 +193,11 @@ export default function QueryDetailPage() {
     }
 
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-6">
+      <div className="card p-6 mt-6">
         <h2 className="text-lg font-semibold text-zinc-100 mb-4">
           App Results
           <span className="text-zinc-500 text-sm font-normal ml-2">
-            {results.length} app{results.length !== 1 ? 's' : ''}
+            {results.length} {pluralize(results.length, 'app')}
           </span>
         </h2>
         <div className="space-y-3">

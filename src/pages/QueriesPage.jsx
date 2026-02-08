@@ -1,19 +1,20 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchQueries } from '../api/queries.js';
 import QueryCategoryBadge from '../components/QueryCategoryBadge.jsx';
 import ErrorCard from '../components/ErrorCard.jsx';
 import EmptyState from '../components/EmptyState.jsx';
 import { CATEGORY_LABELS } from '../constants/queryCategories.js';
+import { useDebounce } from '../hooks/useDebounce.js';
+import PageHeader from '../components/PageHeader.jsx';
 
 export default function QueriesPage() {
   const [queries, setQueries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchText, setSearchText] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debouncedSearch = useDebounce(searchText);
   const [selectedCategory, setSelectedCategory] = useState('');
-  const debounceRef = useRef(null);
   const loadQueries = async () => {
     setLoading(true);
     setError(null);
@@ -31,14 +32,6 @@ export default function QueriesPage() {
     loadQueries();
   }, []);
 
-  useEffect(() => {
-    clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      setDebouncedSearch(searchText);
-    }, 300);
-    return () => clearTimeout(debounceRef.current);
-  }, [searchText]);
-
   const filtered = queries.filter((q) => {
     const matchesCategory = !selectedCategory || q.category === selectedCategory;
     const search = debouncedSearch.toLowerCase();
@@ -50,7 +43,6 @@ export default function QueriesPage() {
 
   const clearFilters = () => {
     setSearchText('');
-    setDebouncedSearch('');
     setSelectedCategory('');
   };
 
@@ -106,10 +98,10 @@ export default function QueriesPage() {
   );
 
   const renderTable = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden">
+    <div className="card overflow-hidden">
       <table className="w-full">
         <thead>
-          <tr className="bg-zinc-800/50 text-zinc-400 text-xs uppercase tracking-wider">
+          <tr className="table-header">
             <th className="px-4 py-3 text-left w-12">#</th>
             <th className="px-4 py-3 text-left">Query Text</th>
             <th className="px-4 py-3 text-left">Category</th>
@@ -158,8 +150,7 @@ export default function QueriesPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-2">Query Bank</h1>
-      <p className="text-zinc-400 mb-6">Browse and filter the bank of 50 search queries.</p>
+      <PageHeader title="Query Bank" subtitle="Browse and filter the bank of 50 search queries." />
       {renderContent()}
     </div>
   );

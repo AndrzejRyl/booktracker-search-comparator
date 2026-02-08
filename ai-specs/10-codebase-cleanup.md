@@ -1,7 +1,7 @@
 # Spec 10 — Codebase Cleanup & DRY Refactoring
 
 **Version:** 1.1
-**Status:** Draft
+**Status:** Complete
 
 ---
 
@@ -611,15 +611,15 @@ Implementation should proceed in phases, with each phase independently testable.
 - [x] 4.4 Extract `validateQueryIndex` helper
 
 ### Phase 4 — Utilities & low-priority cleanup
-- [ ] 2.2 Extract `getRankColor` to `scoreColors.js`
-- [ ] 2.3 Create `useDebounce` hook
-- [ ] 1.4 Extract `PageHeader` component
-- [ ] 2.4 Create `pluralize` helper
-- [ ] 3.1 Delete unused `resultStatus.js`
-- [ ] 5.1 Refactor mock API routing
-- [ ] 6.1 Create `card` CSS utility class
-- [ ] 6.2 Create `table-header` CSS utility class
-- [ ] 8.3 Add route-level code splitting with `React.lazy`
+- [x] 2.2 Extract `getRankColor` to `scoreColors.js`
+- [x] 2.3 Create `useDebounce` hook
+- [x] 1.4 Extract `PageHeader` component
+- [x] 2.4 Create `pluralize` helper
+- [x] 3.1 Delete unused `resultStatus.js`
+- [x] 5.1 Refactor mock API routing
+- [x] 6.1 Create `card` CSS utility class
+- [x] 6.2 Create `table-header` CSS utility class
+- [x] 8.3 Add route-level code splitting with `React.lazy`
 
 ### Testing strategy
 After each phase:
@@ -673,6 +673,18 @@ The highest-impact item is **BookListEditor** (Section 1.1) — it eliminates ~3
 - **validateQueryIndex (4.4):** Created `server/utils/validators.js` with `validateQueryIndex(queryIndex, maxIndex)`. Returns the parsed number or `null` if invalid. Used in `results.js` (POST handler) and `golden.js` (GET and PUT handlers) — 3 call sites replacing the duplicated `isNaN(qIndex) || qIndex < 1 || qIndex > 50` check.
 - **Note on results.js POST handler:** This handler retains two inner `try/catch` blocks for JSON parsing (`JSON.parse(books)` and `JSON.parse(existingScreenshots)`). These are intentional — they catch parse-specific errors to return targeted 400 messages, not the generic 500. The `asyncHandler` wrapping removes the outer catch-all try/catch only.
 - Lint and build both pass cleanly after all Phase 3 changes.
+
+### Phase 4
+
+- **getRankColor (2.2):** Added `getRankColor(rank)` to `src/constants/scoreColors.js`. Removed inline `getRankColor` from `LeaderboardPage` and `getRankClass` from `DashboardPage`. The Dashboard version included layout classes (`text-lg font-bold w-8 text-center`) alongside the color — those layout classes now stay inline with the shared color function called separately.
+- **useDebounce (2.3):** Created `src/hooks/useDebounce.js` — a simple custom hook using `useState` + `useEffect` with `setTimeout`/`clearTimeout`. Replaced the manual `useRef` + `setTimeout` debounce pattern in `QueriesPage`. Removed the `debounceRef` and `debouncedSearch` state — `debouncedSearch` is now derived from `useDebounce(searchText)`. The `clearFilters` function no longer needs to manually reset `debouncedSearch` since it's derived.
+- **PageHeader (1.4):** Created `src/components/PageHeader.jsx` with `title`, `subtitle`, and `children` props. Applied to 5 pages: `QueriesPage`, `ComparePage`, `DashboardPage`, `LeaderboardPage`, `NotFoundPage`. Skipped `AppsPage` (has flex layout with action button alongside header), `GoldenPage`/`ResultsEntryPage` (use `mb-4` spacing and back links), `AppDetailPage`/`QueryDetailPage` (dynamic header with back navigation). `LeaderboardPage` uses the `children` prop for its golden coverage info line.
+- **pluralize (2.4):** Created `src/utils/pluralize.js` with `pluralize(count, singular, plural)`. The third argument is optional — defaults to `singular + 's'`. Replaced 7 instances across `QueryDetailPage` (3x: books, screenshots, apps), `AppsPage` (apps), `LeaderboardPage` (queries), `DashboardPage` (apps have/has).
+- **resultStatus.js (3.1):** Deleted `src/constants/resultStatus.js`. Confirmed via grep that `RESULT_STATUS` is not imported anywhere.
+- **Mock API routing (5.1):** Refactored `src/api/mock/index.js` to match each path regex once, then branch on HTTP method. Reduced 3 separate regex matches for `/apps/:id` (GET/PUT/DELETE) down to 1, 2 matches for `/results/:id` (GET/DELETE) down to 1, and 2 matches for `/golden/:queryIndex` (GET/PUT) down to 1.
+- **CSS utility classes (6.1 + 6.2):** Added `.card` and `.table-header` to `src/index.css` under `@layer components`. `.card` replaces `bg-zinc-900 border border-zinc-800 rounded-xl` across 41 occurrences in 13 files. `.table-header` replaces `bg-zinc-800/50 text-zinc-400 text-xs uppercase tracking-wider` across 5 occurrences in 5 files. The `SideBySideView` golden card uses a different border color (`border-indigo-800/30`) so it wasn't converted — only the standard zinc pattern was replaced.
+- **Code splitting (8.3):** Converted all 10 page imports in `App.jsx` from eager `import` to `React.lazy()`. Added `<Suspense>` wrapper around `<Outlet>` in `AppShell.jsx` with a minimal loading fallback. Build output confirms each page is now a separate chunk (e.g., `DashboardPage-BIAP1x85.js` at 8 KB, `ComparePage-CixDmo82.js` at 13 KB) rather than bundled into the main chunk.
+- Lint and build both pass cleanly after all Phase 4 changes.
 
 ---
 

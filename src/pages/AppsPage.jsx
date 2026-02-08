@@ -5,6 +5,8 @@ import { formatDate } from '../utils/formatDate.js';
 import AppFormModal from '../components/AppFormModal.jsx';
 import ErrorCard from '../components/ErrorCard.jsx';
 import EmptyState from '../components/EmptyState.jsx';
+import { pluralize } from '../utils/pluralize.js';
+import PageHeader from '../components/PageHeader.jsx';
 
 export default function AppsPage() {
   const [apps, setApps] = useState([]);
@@ -32,7 +34,7 @@ export default function AppsPage() {
   const renderSkeleton = () => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {[...Array(6)].map((_, i) => (
-        <div key={i} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 animate-pulse">
+        <div key={i} className="card p-5 animate-pulse">
           <div className="w-16 h-16 rounded-xl bg-zinc-800/50 mb-4" />
           <div className="h-5 w-32 bg-zinc-800/50 rounded mb-2" />
           <div className="h-4 w-full bg-zinc-800/50 rounded mb-1" />
@@ -61,7 +63,7 @@ export default function AppsPage() {
           <Link
             key={app._id}
             to={`/apps/${app._id}`}
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors block"
+            className="card p-5 hover:border-zinc-700 transition-colors block"
           >
             <div className="w-16 h-16 rounded-xl bg-zinc-800 overflow-hidden mb-4">
               <img
@@ -79,7 +81,7 @@ export default function AppsPage() {
         ))}
       </div>
       <p className="text-zinc-500 text-sm mt-4">
-        {apps.length} {apps.length === 1 ? 'app' : 'apps'} tracked
+        {apps.length} {pluralize(apps.length, 'app')} tracked
       </p>
     </>
   );

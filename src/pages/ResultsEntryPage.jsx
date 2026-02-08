@@ -270,13 +270,13 @@ export default function ResultsEntryPage() {
   // Render helpers
   const renderSkeleton = () => (
     <div className="flex flex-1 gap-6 overflow-hidden min-h-0">
-      <div className="w-64 shrink-0 bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+      <div className="w-64 shrink-0 card p-4">
         {[...Array(10)].map((_, i) => (
           <div key={i} className="h-8 bg-zinc-800/50 rounded animate-pulse mb-1" />
         ))}
       </div>
       <div className="flex-1">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+        <div className="card p-6">
           <div className="h-8 w-64 bg-zinc-800/50 rounded animate-pulse mb-4" />
           <div className="h-40 bg-zinc-800/50 rounded animate-pulse mb-4" />
           <div className="h-60 bg-zinc-800/50 rounded animate-pulse" />
@@ -298,7 +298,7 @@ export default function ResultsEntryPage() {
   };
 
   const renderQueryNavigator = () => (
-    <div className="w-64 shrink-0 bg-zinc-900 border border-zinc-800 rounded-xl flex flex-col overflow-hidden">
+    <div className="w-64 shrink-0 card flex flex-col overflow-hidden">
       <div className="px-4 py-3 border-b border-zinc-800">
         <p className="text-sm font-semibold text-zinc-300 mb-2">Queries</p>
         <select
@@ -389,7 +389,7 @@ export default function ResultsEntryPage() {
 
     return (
       <div className="flex-1 overflow-y-auto">
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6">
+        <div className="card p-6">
           <div className="mb-6">
             <h2 className="text-xl font-semibold text-zinc-100">
               Query #{selectedQuery.index} &mdash; {selectedQuery.text}

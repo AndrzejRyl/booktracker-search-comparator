@@ -111,7 +111,7 @@ export default function AppFormModal({ isOpen, onClose, onSave, app }) {
       className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center"
       onClick={handleBackdropClick}
     >
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 w-full max-w-md shadow-xl">
+      <div className="card p-6 w-full max-w-md shadow-xl">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-zinc-100">
             {isEdit ? 'Edit App' : 'Add App'}

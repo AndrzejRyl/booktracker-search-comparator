@@ -4,8 +4,10 @@ import { fetchApps } from '../api/apps.js';
 import { fetchResults } from '../api/results.js';
 import { fetchGoldenResults } from '../api/golden.js';
 import { fetchScores } from '../api/scores.js';
-import { getScoreColor, getScoreBgColor } from '../constants/scoreColors.js';
+import { getScoreColor, getScoreBgColor, getRankColor } from '../constants/scoreColors.js';
 import ErrorCard from '../components/ErrorCard.jsx';
+import { pluralize } from '../utils/pluralize.js';
+import PageHeader from '../components/PageHeader.jsx';
 
 export default function DashboardPage() {
   const [apps, setApps] = useState([]);
@@ -81,15 +83,6 @@ export default function DashboardPage() {
     return 'text-rose-400';
   };
 
-  // --- Rank display helper ---
-
-  const getRankClass = (rank) => {
-    if (rank === 1) return 'text-lg font-bold text-amber-400 w-8 text-center';
-    if (rank === 2) return 'text-lg font-bold text-zinc-300 w-8 text-center';
-    if (rank === 3) return 'text-lg font-bold text-amber-700 w-8 text-center';
-    return 'text-lg font-bold text-zinc-500 w-8 text-center';
-  };
-
   // --- Render helpers ---
 
   const renderSkeleton = () => (
@@ -116,7 +109,7 @@ export default function DashboardPage() {
   const renderStatsCards = () => (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       {/* Apps Tracked */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+      <div className="card p-5">
         <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg mb-3 bg-indigo-900/50">
           📱
         </div>
@@ -125,7 +118,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Results Entered */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+      <div className="card p-5">
         <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg mb-3 bg-emerald-900/50">
           📋
         </div>
@@ -138,7 +131,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Golden Results */}
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5">
+      <div className="card p-5">
         <div className="w-10 h-10 rounded-lg flex items-center justify-center text-lg mb-3 bg-amber-900/50">
           ⭐
         </div>
@@ -172,7 +165,7 @@ export default function DashboardPage() {
       }
 
       return (
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
+        <div className="card p-6 mb-6">
           <h2 className="text-lg font-semibold text-zinc-100 mb-4">Leaderboard Summary</h2>
           <p className="text-sm text-zinc-400">{message}</p>
           {linkTo && (
@@ -185,13 +178,13 @@ export default function DashboardPage() {
     }
 
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mb-6">
+      <div className="card p-6 mb-6">
         <h2 className="text-lg font-semibold text-zinc-100 mb-4">Leaderboard Summary</h2>
 
         <div>
           {scoreData.apps.map((app) => (
             <div key={app.appId} className="flex items-center gap-3 py-2.5">
-              <span className={getRankClass(app.rank)}>{app.rank}</span>
+              <span className={`text-lg font-bold w-8 text-center ${getRankColor(app.rank)}`}>{app.rank}</span>
               {app.appLogo && (
                 <img src={app.appLogo} alt="" className="w-6 h-6 rounded-lg object-cover" />
               )}
@@ -228,11 +221,11 @@ export default function DashboardPage() {
     if (totalApps === 0) return null;
 
     return (
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mb-6">
+      <div className="card overflow-hidden mb-6">
         <h2 className="text-lg font-semibold text-zinc-100 p-6 pb-0 mb-4">Data Completion by App</h2>
         <table className="w-full text-sm">
           <thead>
-            <tr className="bg-zinc-800/50 text-zinc-400 text-xs uppercase tracking-wider">
+            <tr className="table-header">
               <th className="px-6 py-3 text-left">App</th>
               <th className="px-6 py-3 text-left">Results</th>
               <th className="px-6 py-3 text-left">Progress</th>
@@ -291,7 +284,7 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Link
           to="/apps"
-          className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors block"
+          className="card p-5 hover:border-zinc-700 transition-colors block"
         >
           <div className="text-sm font-semibold text-zinc-100 mb-1">Add App</div>
           <div className="text-xs text-zinc-400">Register a new book tracking app to compare.</div>
@@ -299,20 +292,20 @@ export default function DashboardPage() {
 
         <Link
           to="/apps"
-          className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors block"
+          className="card p-5 hover:border-zinc-700 transition-colors block"
         >
           <div className="text-sm font-semibold text-zinc-100 mb-1">Enter Results</div>
           <div className="text-xs text-zinc-400">Start entering search results for your apps.</div>
           {appsWithNoResults > 0 && (
             <div className="text-xs text-zinc-500 mt-2">
-              {appsWithNoResults} {appsWithNoResults === 1 ? 'app has' : 'apps have'} no results yet
+              {appsWithNoResults} {pluralize(appsWithNoResults, 'app has', 'apps have')} no results yet
             </div>
           )}
         </Link>
 
         <Link
           to="/golden"
-          className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors block"
+          className="card p-5 hover:border-zinc-700 transition-colors block"
         >
           <div className="text-sm font-semibold text-zinc-100 mb-1">Define Golden Results</div>
           <div className="text-xs text-zinc-400">{goldenDescription}</div>
@@ -336,10 +329,7 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-zinc-100 mb-1">Dashboard</h1>
-        <p className="text-sm text-zinc-400">Overview of your search comparison project.</p>
-      </div>
+      <PageHeader title="Dashboard" subtitle="Overview of your search comparison project." />
       {renderContent()}
     </div>
   );

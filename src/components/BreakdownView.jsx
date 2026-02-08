@@ -138,10 +138,10 @@ export default function BreakdownView({ apps, queries, results, goldenResults, s
         </select>
       </div>
 
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden overflow-x-auto">
+      <div className="card overflow-hidden overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="bg-zinc-800/50 text-zinc-400 text-xs uppercase tracking-wider">
+            <tr className="table-header">
               <th
                 className="px-4 py-3 text-left cursor-pointer hover:text-zinc-200 transition-colors select-none"
                 onClick={() => handleSort('#')}

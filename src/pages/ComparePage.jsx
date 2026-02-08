@@ -8,6 +8,7 @@ import { COMPARE_VIEWS, COMPARE_VIEW_LABELS } from '../constants/compareViews.js
 import SideBySideView from '../components/SideBySideView.jsx';
 import BreakdownView from '../components/BreakdownView.jsx';
 import ErrorCard from '../components/ErrorCard.jsx';
+import PageHeader from '../components/PageHeader.jsx';
 
 export default function ComparePage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -140,8 +141,7 @@ export default function ComparePage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-2">Compare</h1>
-      <p className="text-zinc-400 text-sm mb-6">Compare search results across apps.</p>
+      <PageHeader title="Compare" subtitle="Compare search results across apps." />
       {renderContent()}
     </div>
   );

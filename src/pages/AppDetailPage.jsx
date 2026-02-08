@@ -70,13 +70,13 @@ export default function AppDetailPage() {
   const renderSkeleton = () => (
     <>
       <div className="h-5 w-40 bg-zinc-800/50 rounded animate-pulse mb-6" />
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 animate-pulse">
+      <div className="card p-6 animate-pulse">
         <div className="w-20 h-20 rounded-xl bg-zinc-800/50 mb-4" />
         <div className="h-8 w-48 bg-zinc-800/50 rounded mb-2" />
         <div className="h-5 w-96 bg-zinc-800/50 rounded mb-2" />
         <div className="h-4 w-64 bg-zinc-800/50 rounded" />
       </div>
-      <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mt-6">
+      <div className="card overflow-hidden mt-6">
         <div className="p-6">
           <div className="h-6 w-48 bg-zinc-800/50 rounded animate-pulse mb-4" />
           <div className="space-y-2">
@@ -107,7 +107,7 @@ export default function AppDetailPage() {
   };
 
   const renderAppInfo = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 mt-6">
+    <div className="card p-6 mt-6">
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-5">
           <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0">
@@ -149,7 +149,7 @@ export default function AppDetailPage() {
   const completedCount = completedIndices.size;
 
   const renderProgressTable = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden mt-6">
+    <div className="card overflow-hidden mt-6">
       <div className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-zinc-100">Query Progress</h2>
@@ -161,7 +161,7 @@ export default function AppDetailPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-zinc-800/50 text-zinc-400 text-xs uppercase tracking-wider">
+                <tr className="table-header">
                   <th className="px-4 py-3 text-left w-12">#</th>
                   <th className="px-4 py-3 text-left">Query</th>
                   <th className="px-4 py-3 text-left">Category</th>

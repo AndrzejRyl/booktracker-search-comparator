@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export default function EmptyState({ message, action }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center">
+    <div className="card p-6 text-center">
       <p className="text-zinc-500 mb-4">{message}</p>
       {action && action.to && (
         <Link

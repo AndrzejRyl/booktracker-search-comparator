@@ -9,3 +9,13 @@ body {
   @apply bg-zinc-950 text-zinc-100 antialiased;
   margin: 0;
 }
+
+@layer components {
+  .card {
+    @apply bg-zinc-900 border border-zinc-800 rounded-xl;
+  }
+
+  .table-header {
+    @apply bg-zinc-800/50 text-zinc-400 text-xs uppercase tracking-wider;
+  }
+}

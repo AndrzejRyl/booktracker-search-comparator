@@ -1,15 +1,17 @@
+import { lazy } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import AppShell from './layouts/AppShell'
-import DashboardPage from './pages/DashboardPage'
-import AppsPage from './pages/AppsPage'
-import AppDetailPage from './pages/AppDetailPage'
-import ResultsEntryPage from './pages/ResultsEntryPage'
-import QueriesPage from './pages/QueriesPage'
-import QueryDetailPage from './pages/QueryDetailPage'
-import ComparePage from './pages/ComparePage'
-import GoldenPage from './pages/GoldenPage'
-import LeaderboardPage from './pages/LeaderboardPage'
-import NotFoundPage from './pages/NotFoundPage'
+
+const DashboardPage = lazy(() => import('./pages/DashboardPage'))
+const AppsPage = lazy(() => import('./pages/AppsPage'))
+const AppDetailPage = lazy(() => import('./pages/AppDetailPage'))
+const ResultsEntryPage = lazy(() => import('./pages/ResultsEntryPage'))
+const QueriesPage = lazy(() => import('./pages/QueriesPage'))
+const QueryDetailPage = lazy(() => import('./pages/QueryDetailPage'))
+const ComparePage = lazy(() => import('./pages/ComparePage'))
+const GoldenPage = lazy(() => import('./pages/GoldenPage'))
+const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 export default function App() {
   return (

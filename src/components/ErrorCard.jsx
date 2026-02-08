@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 export default function ErrorCard({ message, onRetry, action }) {
   return (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center">
+    <div className="card p-6 text-center">
       <p className="text-red-400 mb-4">{message}</p>
       {onRetry && (
         <button

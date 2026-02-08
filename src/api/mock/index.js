@@ -34,26 +34,23 @@ export async function handleRequest(method, path, body) {
     return createApp(body);
   }
 
-  // GET /api/apps/:id
-  const appGetMatch = path.match(/^\/apps\/([a-zA-Z0-9]+)$/);
-  if (method === 'GET' && appGetMatch) {
-    const app = getAppById(appGetMatch[1]);
-    if (!app) throw new Error('App not found');
-    return app;
-  }
-
-  // PUT /api/apps/:id
-  const appPutMatch = path.match(/^\/apps\/([a-zA-Z0-9]+)$/);
-  if (method === 'PUT' && appPutMatch) {
-    return updateApp(appPutMatch[1], body);
-  }
-
-  // DELETE /api/apps/:id
-  const appDeleteMatch = path.match(/^\/apps\/([a-zA-Z0-9]+)$/);
-  if (method === 'DELETE' && appDeleteMatch) {
-    const result = deleteAppById(appDeleteMatch[1]);
-    deleteResultsByAppId(appDeleteMatch[1]);
-    return result;
+  // GET/PUT/DELETE /api/apps/:id
+  const appIdMatch = path.match(/^\/apps\/([a-zA-Z0-9]+)$/);
+  if (appIdMatch) {
+    const id = appIdMatch[1];
+    if (method === 'GET') {
+      const app = getAppById(id);
+      if (!app) throw new Error('App not found');
+      return app;
+    }
+    if (method === 'PUT') {
+      return updateApp(id, body);
+    }
+    if (method === 'DELETE') {
+      const result = deleteAppById(id);
+      deleteResultsByAppId(id);
+      return result;
+    }
   }
 
   // --- Result routes ---
@@ -67,23 +64,23 @@ export async function handleRequest(method, path, body) {
     return getResults(appId, queryIndex);
   }
 
-  // GET /results/:id
-  const resultGetMatch = path.match(/^\/results\/([a-zA-Z0-9]+)$/);
-  if (method === 'GET' && resultGetMatch) {
-    const result = getResultById(resultGetMatch[1]);
-    if (!result) throw new Error('Result not found');
-    return result;
-  }
-
   // POST /results
   if (method === 'POST' && path === '/results') {
     return saveResult(body);
   }
 
-  // DELETE /results/:id
-  const resultDeleteMatch = path.match(/^\/results\/([a-zA-Z0-9]+)$/);
-  if (method === 'DELETE' && resultDeleteMatch) {
-    return deleteResultById(resultDeleteMatch[1]);
+  // GET/DELETE /results/:id
+  const resultIdMatch = path.match(/^\/results\/([a-zA-Z0-9]+)$/);
+  if (resultIdMatch) {
+    const id = resultIdMatch[1];
+    if (method === 'GET') {
+      const result = getResultById(id);
+      if (!result) throw new Error('Result not found');
+      return result;
+    }
+    if (method === 'DELETE') {
+      return deleteResultById(id);
+    }
   }
 
   // --- Golden result routes ---
@@ -93,18 +90,18 @@ export async function handleRequest(method, path, body) {
     return getGoldenResults();
   }
 
-  // GET /golden/:queryIndex
-  const goldenGetMatch = path.match(/^\/golden\/(\d+)$/);
-  if (method === 'GET' && goldenGetMatch) {
-    const result = getGoldenResultByQueryIndex(goldenGetMatch[1]);
-    if (!result) throw new Error('Golden result not found');
-    return result;
-  }
-
-  // PUT /golden/:queryIndex
-  const goldenPutMatch = path.match(/^\/golden\/(\d+)$/);
-  if (method === 'PUT' && goldenPutMatch) {
-    return saveGoldenResult(goldenPutMatch[1], body);
+  // GET/PUT /golden/:queryIndex
+  const goldenMatch = path.match(/^\/golden\/(\d+)$/);
+  if (goldenMatch) {
+    const queryIndex = goldenMatch[1];
+    if (method === 'GET') {
+      const result = getGoldenResultByQueryIndex(queryIndex);
+      if (!result) throw new Error('Golden result not found');
+      return result;
+    }
+    if (method === 'PUT') {
+      return saveGoldenResult(queryIndex, body);
+    }
   }
 
   // --- Scoring routes ---

@@ -56,7 +56,7 @@ export default function SideBySideView({ apps, queries, results, goldenResults, 
     const matchCount = hasGolden ? countGoldenMatches(books, goldenBooks) : 0;
 
     return (
-      <div key={app._id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 w-72 shrink-0">
+      <div key={app._id} className="card p-5 w-72 shrink-0">
         <div className="flex items-center gap-2 mb-3">
           <img src={app.logo} alt={app.name} className="w-6 h-6 rounded-lg object-cover" />
           <span className="text-sm font-semibold text-zinc-100">{app.name}</span>
