@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { fetchApps } from '../api/apps.js';
 import { fetchQueries } from '../api/queries.js';
 import { fetchResults } from '../api/results.js';
@@ -7,6 +7,7 @@ import { fetchGoldenResults } from '../api/golden.js';
 import { COMPARE_VIEWS, COMPARE_VIEW_LABELS } from '../constants/compareViews.js';
 import SideBySideView from '../components/SideBySideView.jsx';
 import BreakdownView from '../components/BreakdownView.jsx';
+import ErrorCard from '../components/ErrorCard.jsx';
 
 export default function ComparePage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -73,14 +74,8 @@ export default function ComparePage() {
   );
 
   const renderError = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center mt-6">
-      <p className="text-red-400 mb-4">{error}</p>
-      <button
-        onClick={loadData}
-        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
-      >
-        Retry
-      </button>
+    <div className="mt-6">
+      <ErrorCard message={error} onRetry={loadData} />
     </div>
   );
 
@@ -109,7 +104,7 @@ export default function ComparePage() {
       return (
         <p className="text-zinc-500 text-sm italic text-center py-12">
           No apps have been registered yet.{' '}
-          <a href="/apps" className="text-indigo-400 hover:text-indigo-300">Add your first app</a> to start comparing.
+          <Link to="/apps" className="text-indigo-400 hover:text-indigo-300">Add your first app</Link> to start comparing.
         </p>
       );
     }
@@ -118,7 +113,7 @@ export default function ComparePage() {
       return (
         <p className="text-zinc-500 text-sm italic text-center py-12">
           No results have been recorded yet.{' '}
-          <a href="/apps" className="text-indigo-400 hover:text-indigo-300">Start entering results</a> for your apps to see comparisons.
+          <Link to="/apps" className="text-indigo-400 hover:text-indigo-300">Start entering results</Link> for your apps to see comparisons.
         </p>
       );
     }

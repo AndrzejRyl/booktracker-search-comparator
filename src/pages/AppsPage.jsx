@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { fetchApps } from '../api/apps.js';
 import { formatDate } from '../utils/formatDate.js';
 import AppFormModal from '../components/AppFormModal.jsx';
+import ErrorCard from '../components/ErrorCard.jsx';
+import EmptyState from '../components/EmptyState.jsx';
 
 export default function AppsPage() {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddModal, setShowAddModal] = useState(false);
-  const navigate = useNavigate();
 
   const loadApps = async () => {
     setLoading(true);
@@ -43,47 +44,24 @@ export default function AppsPage() {
   );
 
   const renderError = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center">
-      <p className="text-red-400 mb-4">{error}</p>
-      <button
-        onClick={loadApps}
-        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
-      >
-        Retry
-      </button>
-    </div>
+    <ErrorCard message={error} onRetry={loadApps} />
   );
 
   const renderEmpty = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center">
-      <p className="text-zinc-500 mb-4">
-        No apps tracked yet. Add your first book-tracking app to get started.
-      </p>
-      <button
-        onClick={() => setShowAddModal(true)}
-        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
-      >
-        Add App
-      </button>
-    </div>
+    <EmptyState
+      message="No apps tracked yet. Add your first book-tracking app to get started."
+      action={{ label: 'Add App', onClick: () => setShowAddModal(true) }}
+    />
   );
 
   const renderGrid = () => (
     <>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {apps.map((app) => (
-          <div
+          <Link
             key={app._id}
-            onClick={() => navigate(`/apps/${app._id}`)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                navigate(`/apps/${app._id}`);
-              }
-            }}
-            tabIndex={0}
-            role="link"
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 cursor-pointer transition-colors"
+            to={`/apps/${app._id}`}
+            className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors block"
           >
             <div className="w-16 h-16 rounded-xl bg-zinc-800 overflow-hidden mb-4">
               <img
@@ -97,7 +75,7 @@ export default function AppsPage() {
               <p className="text-sm text-zinc-400 line-clamp-2 mb-3">{app.notes}</p>
             )}
             <p className="text-xs text-zinc-500">Updated {formatDate(app.updatedAt)}</p>
-          </div>
+          </Link>
         ))}
       </div>
       <p className="text-zinc-500 text-sm mt-4">

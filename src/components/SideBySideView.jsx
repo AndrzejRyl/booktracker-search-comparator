@@ -1,6 +1,8 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { isGoldenMatch, countGoldenMatches } from '../utils/goldenMatch.js';
 import ScreenshotLightbox from './ScreenshotLightbox.jsx';
+import BookListDisplay from './BookListDisplay.jsx';
 
 export default function SideBySideView({ apps, queries, results, goldenResults, initialQueryIndex }) {
   const [selectedQueryIndex, setSelectedQueryIndex] = useState(initialQueryIndex);
@@ -24,12 +26,12 @@ export default function SideBySideView({ apps, queries, results, goldenResults, 
             <span className="text-sm font-semibold text-zinc-100">Golden Results</span>
           </div>
           <p className="text-zinc-500 italic text-sm">No golden results defined for this query.</p>
-          <a
-            href={`/golden?query=${selectedQueryIndex}`}
+          <Link
+            to={`/golden?query=${selectedQueryIndex}`}
             className="text-indigo-400 hover:text-indigo-300 text-sm mt-2 inline-block"
           >
             Define in Golden Editor &rarr;
-          </a>
+          </Link>
         </div>
       );
     }
@@ -39,16 +41,7 @@ export default function SideBySideView({ apps, queries, results, goldenResults, 
         <div className="flex items-center gap-2 mb-3">
           <span className="text-sm font-semibold text-zinc-100">Golden Results</span>
         </div>
-        <div className="space-y-1">
-          {goldenBooks.map((book, i) => (
-            <div key={i} className="flex items-baseline gap-2 text-sm">
-              <span className="text-zinc-500 font-mono w-5 text-right shrink-0">{book.rank}</span>
-              <span className="text-zinc-200 text-xs">{book.title}</span>
-              <span className="text-zinc-600">&mdash;</span>
-              <span className="text-zinc-400 text-xs">{book.author}</span>
-            </div>
-          ))}
-        </div>
+        <BookListDisplay books={goldenBooks} small />
       </div>
     );
   };
@@ -78,21 +71,11 @@ export default function SideBySideView({ apps, queries, results, goldenResults, 
           <p className="text-zinc-500 italic text-sm">No results for this query</p>
         ) : (
           <>
-            <div className="space-y-1">
-              {books.map((book, i) => {
-                const matched = hasGolden && isGoldenMatch(book, goldenBooks);
-                return (
-                  <div key={i} className="flex items-baseline gap-2 text-sm">
-                    <span className={`font-mono w-5 text-right shrink-0 ${matched ? 'text-emerald-400' : 'text-zinc-500'}`}>
-                      {book.rank}
-                    </span>
-                    <span className="text-zinc-200 text-xs">{book.title}</span>
-                    <span className="text-zinc-600">&mdash;</span>
-                    <span className="text-zinc-400 text-xs">{book.author}</span>
-                  </div>
-                );
-              })}
-            </div>
+            <BookListDisplay
+              books={books}
+              small
+              highlightFn={hasGolden ? (book) => isGoldenMatch(book, goldenBooks) : undefined}
+            />
 
             {screenshots.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-3">

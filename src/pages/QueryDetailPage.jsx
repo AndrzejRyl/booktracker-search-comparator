@@ -6,6 +6,8 @@ import { fetchApps } from '../api/apps.js';
 import { fetchGoldenResult } from '../api/golden.js';
 import { formatDate } from '../utils/formatDate.js';
 import QueryCategoryBadge from '../components/QueryCategoryBadge.jsx';
+import ErrorCard from '../components/ErrorCard.jsx';
+import BookListDisplay from '../components/BookListDisplay.jsx';
 
 export default function QueryDetailPage() {
   const { id } = useParams();
@@ -81,14 +83,11 @@ export default function QueryDetailPage() {
         <Link to="/queries" className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors">
           &larr; Back to Query Bank
         </Link>
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center mt-6">
-          <p className="text-red-400 mb-4">{isNotFound ? 'Query not found' : error}</p>
-          <Link
-            to="/queries"
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors inline-block"
-          >
-            Back to Query Bank
-          </Link>
+        <div className="mt-6">
+          <ErrorCard
+            message={isNotFound ? 'Query not found' : error}
+            action={{ label: 'Back to Query Bank', to: '/queries' }}
+          />
         </div>
       </>
     );
@@ -128,16 +127,7 @@ export default function QueryDetailPage() {
             {goldenResult.books.length} book{goldenResult.books.length !== 1 ? 's' : ''}
           </span>
         </h2>
-        <div className="space-y-1">
-          {goldenResult.books.map((book, i) => (
-            <div key={i} className="flex items-baseline gap-2 text-sm">
-              <span className="text-zinc-500 font-mono w-5 text-right shrink-0">{book.rank}.</span>
-              <span className="text-zinc-200">{book.title}</span>
-              <span className="text-zinc-600">&mdash;</span>
-              <span className="text-zinc-400">{book.author}</span>
-            </div>
-          ))}
-        </div>
+        <BookListDisplay books={goldenResult.books} />
         <p className="text-xs text-zinc-500 mt-4">
           Last updated: {formatDate(goldenResult.updatedAt)}
         </p>
@@ -174,16 +164,7 @@ export default function QueryDetailPage() {
         </div>
 
         {result.books.length > 0 && (
-          <div className="space-y-1">
-            {result.books.map((book, i) => (
-              <div key={i} className="flex items-baseline gap-2 text-sm">
-                <span className="text-zinc-500 font-mono w-5 text-right shrink-0">{book.rank}.</span>
-                <span className="text-zinc-200">{book.title}</span>
-                <span className="text-zinc-600">&mdash;</span>
-                <span className="text-zinc-400">{book.author}</span>
-              </div>
-            ))}
-          </div>
+          <BookListDisplay books={result.books} />
         )}
 
         {result.screenshots.length > 0 && (

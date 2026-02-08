@@ -592,7 +592,7 @@ Not critical at this app's size, but it's standard practice and sets up good hab
 Implementation should proceed in phases, with each phase independently testable.
 
 ### Phase 0 — Bug fixes (do first)
-- [ ] 8.1 Replace `<a href>` with `<Link>` in `ComparePage` and `SideBySideView`
+- [x] 8.1 Replace `<a href>` with `<Link>` in `ComparePage` and `SideBySideView`
 
 ### Phase 1 — High-impact DRY extractions
 - [x] 1.1 Extract `BookListEditor` component
@@ -601,10 +601,10 @@ Implementation should proceed in phases, with each phase independently testable.
 - [x] 4.2 Extract `computeAppScore` to consolidate scoring route logic
 
 ### Phase 2 — Shared UI components
-- [ ] 1.2 Extract `ErrorCard` component
-- [ ] 1.3 Extract `EmptyState` component
-- [ ] 7.1 Extract `BookListDisplay` component (read-only)
-- [ ] 8.2 Replace clickable `<div>`/`<tr>` with real `<Link>` elements
+- [x] 1.2 Extract `ErrorCard` component
+- [x] 1.3 Extract `EmptyState` component
+- [x] 7.1 Extract `BookListDisplay` component (read-only)
+- [x] 8.2 Replace clickable `<div>`/`<tr>` with real `<Link>` elements
 
 ### Phase 3 — Backend cleanup
 - [ ] 4.3 Add global error handler middleware + `asyncHandler` wrapper
@@ -656,6 +656,15 @@ The highest-impact item is **BookListEditor** (Section 1.1) — it eliminates ~3
 - **formatDate (2.1):** Straightforward extraction. Removed inline definitions from `AppsPage` and `AppDetailPage`. Also replaced the inline `toLocaleDateString` call in `QueryDetailPage` (used same format options). Created `src/utils/formatDate.js`.
 - **Scoring utils (4.1 + 4.2):** Created `server/utils/scoring.js` with `normalizeStr`, `computeQueryScore`, and `computeAppScore`. The `GET /:appId` route enriches `queryScores` with `queryText` and `category` after calling `computeAppScore`, since those extra fields are needed for the per-app detail view but not for the leaderboard endpoint.
 - Lint and build both pass cleanly after all Phase 1 changes.
+
+### Phase 2
+
+- **ErrorCard (1.2):** Created `src/components/ErrorCard.jsx` with `message`, `onRetry`, and `action` props. Replaced `renderError()` in all 9 pages. Pages with special layout (back navigation links above the card in `AppDetailPage`, `QueryDetailPage`) keep their back link rendering separate and wrap `ErrorCard` in a `<div className="mt-6">` for spacing. The `LeaderboardPage` previously had a unique error style (red border, centered flex container, zinc button) — now standardized to the common pattern. `DashboardPage` previously used `text-rose-400` — now standardized to `text-red-400`.
+- **EmptyState (1.3):** Created `src/components/EmptyState.jsx` supporting both `onClick` (button) and `to` (Link) actions, with a `variant` option for secondary button styling. Used in `QueriesPage` (filter empty), `AppsPage` (no apps), `LeaderboardPage` (no apps / no golden).
+- **BookListDisplay (7.1):** Created `src/components/BookListDisplay.jsx` with `books`, `highlightFn`, and `small` props. The `small` prop adds `text-xs` to title/author (used in `SideBySideView`). The `highlightFn` prop enables conditional emerald highlighting on the rank number (used for golden match detection in `SideBySideView`). Without `small`, ranks render with a trailing dot (e.g. `1.`); with `small`, no dot — matching the original SideBySideView behavior. Used in `QueryDetailPage` (2 instances) and `SideBySideView` (2 instances).
+- **Real Link elements (8.2):** `QueriesPage` table rows now use a `<Link>` with `after:absolute after:inset-0` CSS to stretch the click target across the entire row while providing proper anchor semantics (right-click "Open in new tab", URL in status bar). `AppsPage` cards replaced the `<div>` with a `<Link>` using `block` display. Both pages no longer need `useNavigate`, `tabIndex`, `role`, `onKeyDown` props. The `useNavigate` import was removed from both files.
+- **SPA bug fix (8.1):** Also fixed during this phase — `ComparePage` had two `<a href="/apps">` tags and `SideBySideView` had one `<a href="/golden?query=...">` tag, all replaced with React Router `<Link>`.
+- Lint and build both pass cleanly after all Phase 2 changes.
 
 ---
 

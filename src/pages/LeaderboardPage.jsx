@@ -4,6 +4,8 @@ import { fetchScores } from '../api/scores.js';
 import { fetchQueries } from '../api/queries.js';
 import { getScoreColor, getScoreBgColor } from '../constants/scoreColors.js';
 import { CATEGORY_LABELS } from '../constants/queryCategories.js';
+import ErrorCard from '../components/ErrorCard.jsx';
+import EmptyState from '../components/EmptyState.jsx';
 
 export default function LeaderboardPage() {
   const [data, setData] = useState(null);
@@ -67,37 +69,21 @@ export default function LeaderboardPage() {
   );
 
   const renderError = () => (
-    <div className="flex justify-center py-12">
-      <div className="bg-zinc-900 border border-red-800/50 rounded-xl p-6 max-w-md text-center">
-        <p className="text-red-400 text-sm mb-4">{error}</p>
-        <button
-          onClick={loadData}
-          className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-sm rounded-lg transition-colors"
-        >
-          Retry
-        </button>
-      </div>
-    </div>
+    <ErrorCard message={error} onRetry={loadData} />
   );
 
   const renderEmptyNoApps = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
-      <p className="text-zinc-400 text-sm mb-2">No apps have been registered yet.</p>
-      <Link to="/apps" className="text-indigo-400 hover:text-indigo-300 text-sm">
-        Go to Apps →
-      </Link>
-    </div>
+    <EmptyState
+      message="No apps have been registered yet."
+      action={{ label: 'Go to Apps \u2192', to: '/apps' }}
+    />
   );
 
   const renderEmptyNoGolden = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
-      <p className="text-zinc-400 text-sm mb-2">
-        No golden results have been defined yet. Scoring requires golden results as the ground truth.
-      </p>
-      <Link to="/golden" className="text-indigo-400 hover:text-indigo-300 text-sm">
-        Go to Golden Results →
-      </Link>
-    </div>
+    <EmptyState
+      message="No golden results have been defined yet. Scoring requires golden results as the ground truth."
+      action={{ label: 'Go to Golden Results \u2192', to: '/golden' }}
+    />
   );
 
   const renderExpandedRow = (app) => (

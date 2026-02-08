@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { fetchQueries } from '../api/queries.js';
 import QueryCategoryBadge from '../components/QueryCategoryBadge.jsx';
+import ErrorCard from '../components/ErrorCard.jsx';
+import EmptyState from '../components/EmptyState.jsx';
 import { CATEGORY_LABELS } from '../constants/queryCategories.js';
 
 export default function QueriesPage() {
@@ -12,8 +14,6 @@ export default function QueriesPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const debounceRef = useRef(null);
-  const navigate = useNavigate();
-
   const loadQueries = async () => {
     setLoading(true);
     setError(null);
@@ -63,15 +63,7 @@ export default function QueriesPage() {
   );
 
   const renderError = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center">
-      <p className="text-red-400 mb-4">{error}</p>
-      <button
-        onClick={loadQueries}
-        className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors"
-      >
-        Retry
-      </button>
-    </div>
+    <ErrorCard message={error} onRetry={loadQueries} />
   );
 
   const renderFilters = () => (
@@ -107,15 +99,10 @@ export default function QueriesPage() {
   );
 
   const renderEmpty = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center">
-      <p className="text-zinc-500 mb-4">No queries match your filters. Try adjusting your search or category filter.</p>
-      <button
-        onClick={clearFilters}
-        className="px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-zinc-100 rounded-lg transition-colors"
-      >
-        Clear filters
-      </button>
-    </div>
+    <EmptyState
+      message="No queries match your filters. Try adjusting your search or category filter."
+      action={{ label: 'Clear filters', onClick: clearFilters, variant: 'secondary' }}
+    />
   );
 
   const renderTable = () => (
@@ -133,19 +120,17 @@ export default function QueriesPage() {
           {filtered.map((q) => (
             <tr
               key={q.index}
-              onClick={() => navigate(`/queries/${q.index}`)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  navigate(`/queries/${q.index}`);
-                }
-              }}
-              tabIndex={0}
-              role="link"
-              className="border-t border-zinc-800 hover:bg-zinc-800/30 cursor-pointer transition-colors"
+              className="border-t border-zinc-800 hover:bg-zinc-800/30 transition-colors relative"
             >
               <td className="px-4 py-3 text-sm text-zinc-400">{q.index}</td>
-              <td className="px-4 py-3 text-sm text-zinc-100 font-mono">{q.text}</td>
+              <td className="px-4 py-3 text-sm text-zinc-100 font-mono">
+                <Link
+                  to={`/queries/${q.index}`}
+                  className="after:absolute after:inset-0"
+                >
+                  {q.text}
+                </Link>
+              </td>
               <td className="px-4 py-3">
                 <QueryCategoryBadge category={q.category} />
               </td>

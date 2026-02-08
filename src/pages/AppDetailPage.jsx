@@ -6,6 +6,7 @@ import { fetchResults } from '../api/results.js';
 import { formatDate } from '../utils/formatDate.js';
 import QueryCategoryBadge from '../components/QueryCategoryBadge.jsx';
 import AppFormModal from '../components/AppFormModal.jsx';
+import ErrorCard from '../components/ErrorCard.jsx';
 
 export default function AppDetailPage() {
   const { id } = useParams();
@@ -95,14 +96,11 @@ export default function AppDetailPage() {
         <Link to="/apps" className="text-indigo-400 hover:text-indigo-300 text-sm transition-colors">
           &larr; Back to Apps
         </Link>
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 text-center mt-6">
-          <p className="text-red-400 mb-4">{isNotFound ? 'App not found' : error}</p>
-          <Link
-            to="/apps"
-            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition-colors inline-block"
-          >
-            Back to Apps
-          </Link>
+        <div className="mt-6">
+          <ErrorCard
+            message={isNotFound ? 'App not found' : error}
+            action={{ label: 'Back to Apps', to: '/apps' }}
+          />
         </div>
       </>
     );

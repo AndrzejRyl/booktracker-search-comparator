@@ -5,6 +5,7 @@ import { fetchResults } from '../api/results.js';
 import { fetchGoldenResults } from '../api/golden.js';
 import { fetchScores } from '../api/scores.js';
 import { getScoreColor, getScoreBgColor } from '../constants/scoreColors.js';
+import ErrorCard from '../components/ErrorCard.jsx';
 
 export default function DashboardPage() {
   const [apps, setApps] = useState([]);
@@ -109,15 +110,7 @@ export default function DashboardPage() {
   );
 
   const renderError = () => (
-    <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-8 text-center">
-      <p className="text-rose-400 mb-4">{error}</p>
-      <button
-        onClick={loadData}
-        className="px-4 py-2 bg-indigo-600 text-zinc-100 rounded-lg hover:bg-indigo-500 transition-colors text-sm"
-      >
-        Retry
-      </button>
-    </div>
+    <ErrorCard message={error} onRetry={loadData} />
   );
 
   const renderStatsCards = () => (
