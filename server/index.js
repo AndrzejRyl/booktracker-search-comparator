@@ -9,6 +9,7 @@ import appsRouter from './routes/apps.js';
 import resultsRouter from './routes/results.js';
 import goldenRouter from './routes/golden.js';
 import scoresRouter from './routes/scores.js';
+import { errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config({ path: './server/.env' });
 
@@ -28,6 +29,9 @@ app.use('/api/apps', appsRouter);
 app.use('/api/results', resultsRouter);
 app.use('/api/golden', goldenRouter);
 app.use('/api/scores', scoresRouter);
+
+// Global error handler (must be after all routes)
+app.use(errorHandler);
 
 // Connect to MongoDB and start server
 connectDB().then(() => {

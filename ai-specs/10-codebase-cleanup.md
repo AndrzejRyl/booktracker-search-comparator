@@ -607,8 +607,8 @@ Implementation should proceed in phases, with each phase independently testable.
 - [x] 8.2 Replace clickable `<div>`/`<tr>` with real `<Link>` elements
 
 ### Phase 3 — Backend cleanup
-- [ ] 4.3 Add global error handler middleware + `asyncHandler` wrapper
-- [ ] 4.4 Extract `validateQueryIndex` helper
+- [x] 4.3 Add global error handler middleware + `asyncHandler` wrapper
+- [x] 4.4 Extract `validateQueryIndex` helper
 
 ### Phase 4 — Utilities & low-priority cleanup
 - [ ] 2.2 Extract `getRankColor` to `scoreColors.js`
@@ -665,6 +665,14 @@ The highest-impact item is **BookListEditor** (Section 1.1) — it eliminates ~3
 - **Real Link elements (8.2):** `QueriesPage` table rows now use a `<Link>` with `after:absolute after:inset-0` CSS to stretch the click target across the entire row while providing proper anchor semantics (right-click "Open in new tab", URL in status bar). `AppsPage` cards replaced the `<div>` with a `<Link>` using `block` display. Both pages no longer need `useNavigate`, `tabIndex`, `role`, `onKeyDown` props. The `useNavigate` import was removed from both files.
 - **SPA bug fix (8.1):** Also fixed during this phase — `ComparePage` had two `<a href="/apps">` tags and `SideBySideView` had one `<a href="/golden?query=...">` tag, all replaced with React Router `<Link>`.
 - Lint and build both pass cleanly after all Phase 2 changes.
+
+### Phase 3
+
+- **asyncHandler (4.3):** Created `server/utils/asyncHandler.js` — a 5-line wrapper that catches rejected promises and forwards to `next()`. Created `server/middleware/errorHandler.js` — global error-handling middleware registered at the end of the Express chain in `server/index.js`. Logs 500 errors to console with method/URL context, returns consistent `{ message }` JSON. Supports `err.status` for expected errors (404, 400).
+- **Route refactoring (4.3):** All 16 route handlers across 5 files (`queries.js`, `apps.js`, `results.js`, `golden.js`, `scores.js`) wrapped with `asyncHandler()`. Removed all `try/catch` blocks. For 404 not-found cases, converted to `throw` with `err.status = 404` pattern (cleaner than `return res.status(404).json(...)`). For 400 validation responses, kept the explicit `return res.status(400).json(...)` pattern — these are expected validation responses, not errors, so throwing felt less natural.
+- **validateQueryIndex (4.4):** Created `server/utils/validators.js` with `validateQueryIndex(queryIndex, maxIndex)`. Returns the parsed number or `null` if invalid. Used in `results.js` (POST handler) and `golden.js` (GET and PUT handlers) — 3 call sites replacing the duplicated `isNaN(qIndex) || qIndex < 1 || qIndex > 50` check.
+- **Note on results.js POST handler:** This handler retains two inner `try/catch` blocks for JSON parsing (`JSON.parse(books)` and `JSON.parse(existingScreenshots)`). These are intentional — they catch parse-specific errors to return targeted 400 messages, not the generic 500. The `asyncHandler` wrapping removes the outer catch-all try/catch only.
+- Lint and build both pass cleanly after all Phase 3 changes.
 
 ---
 
