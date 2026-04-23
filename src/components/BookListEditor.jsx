@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 
 export default function BookListEditor({ books, onChange, maxBooks = 9 }) {
   const [bookInputMode, setBookInputMode] = useState('manual');
@@ -6,6 +6,7 @@ export default function BookListEditor({ books, onChange, maxBooks = 9 }) {
   const [jsonError, setJsonError] = useState(null);
   const [newBookTitle, setNewBookTitle] = useState('');
   const [newBookAuthor, setNewBookAuthor] = useState('');
+  const titleInputRef = useRef(null);
 
   const handleAddBook = () => {
     if (!newBookTitle.trim() || !newBookAuthor.trim()) return;
@@ -17,6 +18,7 @@ export default function BookListEditor({ books, onChange, maxBooks = 9 }) {
     ]);
     setNewBookTitle('');
     setNewBookAuthor('');
+    titleInputRef.current?.focus();
   };
 
   const handleAddBookKeyDown = (e) => {
@@ -111,6 +113,7 @@ export default function BookListEditor({ books, onChange, maxBooks = 9 }) {
       {books.length < maxBooks && (
         <div className="flex gap-3 mt-3">
           <input
+            ref={titleInputRef}
             type="text"
             placeholder="Title"
             value={newBookTitle}

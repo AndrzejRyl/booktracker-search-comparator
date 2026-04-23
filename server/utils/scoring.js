@@ -1,5 +1,5 @@
 export function normalizeStr(s) {
-  return s.toLowerCase().trim().replace(/['']/g, "'");
+  return s.toLowerCase().trim().replace(/['']/g, "'").replace(/\.\s+/g, '.').replace(/\s+/g, ' ');
 }
 
 export function computeQueryScore(resultBooks, goldenBooks) {

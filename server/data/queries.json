@@ -181,13 +181,13 @@
   },
   {
     "index": 31,
-    "text": "haunting adeline hd carlton",
+    "text": "haunting adeline",
     "description": "Dark romance — self-published, BookTok phenomenon",
     "category": "romance-recent"
   },
   {
     "index": 32,
-    "text": "the housemaid freida mcfadden",
+    "text": "the housemaid",
     "description": "Thriller — Kindle-first / self-published breakout",
     "category": "thriller-indie"
   },
@@ -199,13 +199,13 @@
   },
   {
     "index": 34,
-    "text": "the inmate",
+    "text": "dear debbi",
     "description": "Thriller — Kindle-first title",
     "category": "thriller-indie"
   },
   {
     "index": 35,
-    "text": "just the nicest couple mary kubica",
+    "text": "just the nicest couple",
     "description": "Thriller — mid-tier trad, not a mega-bestseller",
     "category": "thriller-indie"
   },
@@ -217,7 +217,7 @@
   },
   {
     "index": 37,
-    "text": "imaginary strangers minka kent",
+    "text": "imaginary strangers",
     "description": "Thriller — recent indie (2025)",
     "category": "thriller-recent"
   },
@@ -229,14 +229,14 @@
   },
   {
     "index": 39,
-    "text": "legends and lattes travis baldree",
+    "text": "legends and lates",
     "description": "Cozy fantasy — indie-to-trad crossover",
     "category": "fantasy-indie"
   },
   {
     "index": 40,
-    "text": "zodiac academy jaymin eve",
-    "description": "Indie fantasy academy romance — self-published series",
+    "text": "I accidently summoned retired hero",
+    "description": "Indie fantasy romance — self-published series. Long title",
     "category": "fantasy-indie"
   },
   {
@@ -247,7 +247,7 @@
   },
   {
     "index": 42,
-    "text": "the atlas six olivie blake",
+    "text": "atlas six",
     "description": "Started self-published, later picked up by trad",
     "category": "fantasy-indie"
   },
@@ -265,13 +265,13 @@
   },
   {
     "index": 45,
-    "text": "one hundred years of solitude",
+    "text": "one hundred years of",
     "description": "Translated title in English",
     "category": "translated"
   },
   {
     "index": 46,
-    "text": "the little prince",
+    "text": "little prince",
     "description": "Translated title in English",
     "category": "translated"
   },
@@ -289,7 +289,7 @@
   },
   {
     "index": 49,
-    "text": "house of leaves danielewski",
+    "text": "house of leaves",
     "description": "Niche / obscure — cult classic, long-tail coverage",
     "category": "edge-case"
   },

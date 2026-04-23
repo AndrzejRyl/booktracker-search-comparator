@@ -5,6 +5,7 @@ import { fetchQueries } from '../api/queries.js';
 import { fetchResults, saveResult, deleteResult } from '../api/results.js';
 import QueryCategoryBadge from '../components/QueryCategoryBadge.jsx';
 import BookListEditor from '../components/BookListEditor.jsx';
+import ScreenshotLightbox from '../components/ScreenshotLightbox.jsx';
 import ErrorCard from '../components/ErrorCard.jsx';
 
 export default function ResultsEntryPage() {
@@ -38,6 +39,9 @@ export default function ResultsEntryPage() {
 
   // Form state — books
   const [books, setBooks] = useState([]);
+
+  // Lightbox
+  const [lightbox, setLightbox] = useState(null);
 
   // Derived data
   const completedIndices = new Set(results.map((r) => r.queryIndex));
@@ -341,7 +345,12 @@ export default function ResultsEntryPage() {
       <div className="flex flex-wrap gap-3">
         {existingScreenshots.map((src, i) => (
           <div key={`existing-${i}`} className="w-24 h-24 rounded-lg overflow-hidden border border-zinc-700 relative group">
-            <img src={src} alt={`Screenshot ${i + 1}`} className="w-full h-full object-cover" />
+            <img
+              src={src}
+              alt={`Screenshot ${i + 1}`}
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={() => setLightbox({ screenshots: [...existingScreenshots, ...screenshotPreviews], initialIndex: i })}
+            />
             <button
               onClick={() => removeExistingScreenshot(i)}
               className="absolute top-1 right-1 bg-black/60 text-zinc-300 hover:text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
@@ -352,7 +361,12 @@ export default function ResultsEntryPage() {
         ))}
         {screenshotPreviews.map((src, i) => (
           <div key={`new-${i}`} className="w-24 h-24 rounded-lg overflow-hidden border border-zinc-700 relative group">
-            <img src={src} alt={`New screenshot ${i + 1}`} className="w-full h-full object-cover" />
+            <img
+              src={src}
+              alt={`New screenshot ${i + 1}`}
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={() => setLightbox({ screenshots: [...existingScreenshots, ...screenshotPreviews], initialIndex: existingScreenshots.length + i })}
+            />
             <button
               onClick={() => removeNewScreenshot(i)}
               className="absolute top-1 right-1 bg-black/60 text-zinc-300 hover:text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
@@ -472,6 +486,14 @@ export default function ResultsEntryPage() {
         )}
       </div>
       {renderContent()}
+      {lightbox && (
+        <ScreenshotLightbox
+          screenshots={lightbox.screenshots}
+          initialIndex={lightbox.initialIndex}
+          appName={app?.name || ''}
+          onClose={() => setLightbox(null)}
+        />
+      )}
     </div>
   );
 }
